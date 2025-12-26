@@ -7,6 +7,16 @@ const Home = () => {
     <>
       <Navbar />
 
+      {/* HERO SECTION */}
+      <section className="hero">
+        <h1>Authentic Bihari Sweets</h1>
+        <p>
+          BiharBite brings you the real taste of Bihar — handmade, traditional
+          and pure.
+        </p>
+      </section>
+
+      {/* PRODUCTS */}
       <div className="container">
         <h2 className="section-title">BiharBite Specials</h2>
 
