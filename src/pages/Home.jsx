@@ -48,6 +48,43 @@ const Home = () => {
           so every bite tastes just like home.
         </p>
       </section>
+      {/* WHY CHOOSE US */}
+<section className="why">
+  <h2>Why Choose BiharBite?</h2>
+
+  <div className="why-grid">
+    <div className="why-card">
+      <h3>100% Handmade</h3>
+      <p>
+        Every sweet is carefully handmade using traditional methods to preserve
+        authentic taste.
+      </p>
+    </div>
+
+    <div className="why-card">
+      <h3>No Preservatives</h3>
+      <p>
+        We use natural ingredients only — no chemicals, no shortcuts, just
+        purity.
+      </p>
+    </div>
+
+    <div className="why-card">
+      <h3>Authentic Recipes</h3>
+      <p>
+        Original recipes passed down through generations of Bihar’s kitchens.
+      </p>
+    </div>
+
+    <div className="why-card">
+      <h3>Local Artisans</h3>
+      <p>
+        Supporting skilled local sweet makers and traditional craftsmanship.
+      </p>
+    </div>
+  </div>
+</section>
+
     </>
   );
 };
