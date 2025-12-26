@@ -118,3 +118,25 @@ body {
   font-size: 18px;
   max-width: 600px;
 }
+
+
+
+.about {
+  background: #fff4dc;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.about h2 {
+  font-size: 36px;
+  margin-bottom: 20px;
+  color: #5a2e00;
+}
+
+.about p {
+  font-size: 18px;
+  max-width: 800px;
+  margin: 10px auto;
+  color: #3a1f00;
+  line-height: 1.6;
+}
