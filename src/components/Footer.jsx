@@ -1,21 +1,36 @@
 const Footer = () => {
   return (
-    <footer style={styles.footer}>
-      <p>© 2025 BiharBite</p>
-      <p>Authentic Bihari Sweets</p>
-      <p>📍 Made in Bihar, India</p>
+    <footer className="footer">
+      <div className="footer-container">
+        {/* BRAND */}
+        <div>
+          <h3>BiharBite</h3>
+          <p>
+            Authentic Bihari sweets made with love, tradition and purity.
+          </p>
+        </div>
+
+        {/* CONTACT */}
+        <div>
+          <h4>Contact</h4>
+          <p>Email: support@biharbite.com</p>
+          <p>Phone: +91 6268947041</p>
+        </div>
+
+        {/* SOCIAL */}
+        <div>
+          <h4>Follow Us</h4>
+          <p>Instagram</p>
+          <p>Facebook</p>
+          <p>WhatsApp</p>
+        </div>
+      </div>
+
+      <p className="footer-bottom">
+        © {new Date().getFullYear()} BiharBite. All rights reserved.
+      </p>
     </footer>
   );
-};
-
-const styles = {
-  footer: {
-    marginTop: "40px",
-    padding: "20px",
-    backgroundColor: "#7a3e00",
-    color: "#fff",
-    textAlign: "center",
-  },
 };
 
 export default Footer;
