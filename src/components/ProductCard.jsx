@@ -1,19 +1,19 @@
+import React, { useState } from "react";
+
 const ProductCard = ({ product }) => {
+  const [zoom, setZoom] = useState(false);
+
   return (
-    <div className="product-card">
-      <img src={product.image} alt={product.name} />
-      <h3>{product.name}</h3>
-      <p>{product.description}</p>
-      <p>₹{product.price}</p>
-      <a
-        href={`https://wa.me/916268947041?text=I want to order ${product.name}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="order-btn"
-      >
-        Order via WhatsApp
-      </a>
-    </div>
+    <>
+      <div className="product-card" onMouseEnter={() => setZoom(true)} onMouseLeave={() => setZoom(false)}>
+        <img src={product.image} alt={product.name} className={zoom ? "zoom" : ""} />
+        <h3>{product.name}</h3>
+        <p>{product.description}</p>
+        <a href="https://wa.me/916268947041?text=Hello BiharBite!" target="_blank" rel="noopener noreferrer" className="order-btn">
+          Order Now
+        </a>
+      </div>
+    </>
   );
 };
 
