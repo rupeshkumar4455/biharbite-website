@@ -1,47 +1,62 @@
+import React from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import ProductCard from "../components/ProductCard";
 import products from "../data/products";
-import Testimonials from "../components/Testimonials";
+import ProductCard from "../components/ProductCard";
 
-const Home = () => (
-  <>
-    <Navbar />
+const Home = () => {
+  return (
+    <>
+      <Navbar />
 
-    <section className="hero" id="home">
-      <h1>🍬 BiharBite</h1>
-      <p>Authentic Bihari sweets — handmade, pure & crafted with love.</p>
-      <a href="https://wa.me/916268947041?text=Hello BiharBite!" target="_blank" rel="noopener noreferrer" className="hero-btn">
-        Order Now
-      </a>
-    </section>
+      {/* HERO */}
+      <section id="hero" className="hero">
+        <h1>🍬 BiharBite</h1>
+        <p>Authentic Bihari sweets, crafted with love and tradition.</p>
+      </section>
 
-    <section className="about">
-      <h2>About BiharBite</h2>
-      <p>BiharBite brings the rich heritage of Bihar to your doorstep with handmade sweets using traditional recipes.</p>
-    </section>
+      {/* ABOUT */}
+      <section id="about" className="about">
+        <h2 className="section-title">About BiharBite</h2>
+        <p>BiharBite brings the rich heritage of Bihar's sweets to your doorstep. Handmade, pure, and timeless delights for every occasion.</p>
+      </section>
 
-    <div className="container" id="products">
-      <h2 className="section-title">BiharBite Specials</h2>
-      <div className="product-grid">
-        {products.map((product) => <ProductCard key={product.id} product={product} />)}
-      </div>
-    </div>
+      {/* PRODUCTS */}
+      <section id="products" className="products">
+        <h2 className="section-title">BiharBite Specials</h2>
+        <div className="product-grid">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </section>
 
-    <section className="why-choose" id="why-choose">
-      <h2>Why Choose BiharBite?</h2>
-      <div className="reasons">
-        <div className="reason-card"><h3>Traditional Recipes</h3><p>Authentic flavors passed down generations.</p></div>
-        <div className="reason-card"><h3>100% Handmade</h3><p>Crafted with care and love.</p></div>
-        <div className="reason-card"><h3>Pure & Hygienic</h3><p>Made under strict hygiene standards.</p></div>
-        <div className="reason-card"><h3>Fast Delivery</h3><p>Get your sweets fresh & on time.</p></div>
-      </div>
-    </section>
+      {/* WHY CHOOSE */}
+      <section id="why" className="why-biharbite">
+        <h2 className="section-title">Why Choose BiharBite?</h2>
+        <p>✔️ Pure & Handmade</p>
+        <p>✔️ Rich Traditional Flavors</p>
+        <p>✔️ Fresh & Timely Delivery</p>
+      </section>
 
-    <Testimonials />
+      {/* TESTIMONIALS */}
+      <section id="testimonials" className="testimonials">
+        <h2 className="section-title">What Our Customers Say</h2>
+        <div className="testimonial-grid">
+          <div className="testimonial-card">
+            <p>“BiharBite sweets are amazing! Loved the taste.”</p>
+            <h4>- Priya S.</h4>
+          </div>
+          <div className="testimonial-card">
+            <p>“Authentic flavor, fast delivery. Highly recommend!”</p>
+            <h4>- Raj K.</h4>
+          </div>
+        </div>
+      </section>
 
-    <Footer />
-  </>
-);
+      <Footer />
+    </>
+  );
+};
 
 export default Home;
