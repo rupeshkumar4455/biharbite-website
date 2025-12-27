@@ -3,26 +3,18 @@ import Footer from "../components/Footer";
 import products from "../data/products";
 import ProductCard from "../components/ProductCard";
 
-const Home = () => {
+const Products = () => {
   return (
     <>
       <Navbar />
 
       <section className="hero">
-        <h1>Authentic Bihari Sweets</h1>
-        <p>BiharBite brings you the real taste of Bihar — handmade, traditional & crafted with love.</p>
-        <a
-          href="https://wa.me/916268947041?text=Hello BiharBite!"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hero-btn"
-        >
-          Order Now
-        </a>
+        <h1>Our BiharBite Specials</h1>
+        <p>Handmade sweets crafted with tradition & love</p>
       </section>
 
       <div className="container">
-        <h2 className="section-title">BiharBite Specials</h2>
+        <h2 className="section-title">All Products</h2>
         <div className="product-grid">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
@@ -35,4 +27,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Products;

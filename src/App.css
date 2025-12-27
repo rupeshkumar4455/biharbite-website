@@ -1,185 +1,109 @@
-
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: Arial, sans-serif;
-}
-
-
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #fff7ed;
-  color: #4a2c0a;
-}
-
-.container {
-  padding: 30px;
-}
-
-.section-title {
-  font-size: 28px;
-  margin-bottom: 20px;
-}
-
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-}
-
-.card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  text-align: center;
-}
-
-.card img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-  border-radius: 10px;
-}
-
-.card h3 {
-  margin: 10px 0 5px;
-}
-
-.card p {
-  margin: 5px 0;
-}
-
-.price {
-  font-weight: bold;
-  margin: 10px 0;
-}
-
-.whatsapp-btn {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 10px 15px;
-  background: #25d366;
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-}
-
-.navbar {
-  background-color: #7c3f00;
-  padding: 15px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.logo {
-  color: #fff;
-  font-size: 24px;
-}
-
-.nav-btn {
-  background: #ffd966;
-  padding: 8px 15px;
-  border-radius: 8px;
-  color: #000;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-
-
-
-
+/* HERO SECTION */
 .hero {
-  min-height: 60vh;
-  background: linear-gradient(135deg, #ffe8a3, #ffcc70);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
   text-align: center;
-  padding: 20px;
+  padding: 80px 20px;
+  background: #fff4dc;
 }
 
 .hero h1 {
-  font-size: 40px;
-  margin-bottom: 16px;
-}
-
-.hero p {
-  font-size: 18px;
-  max-width: 600px;
-}
-
-
-
-.about {
-  background: #fff4dc;
-  padding: 80px 20px;
-  text-align: center;
-}
-
-.about h2 {
-  font-size: 36px;
-  margin-bottom: 20px;
-  color: #5a2e00;
-}
-
-.about p {
-  font-size: 18px;
-  max-width: 800px;
-  margin: 10px auto;
-  color: #3a1f00;
-  line-height: 1.6;
-}
-
-.why {
-  padding: 80px 20px;
-  background: #fff;
-  text-align: center;
-}
-
-.why h2 {
-  font-size: 36px;
-  margin-bottom: 40px;
-  color: #5a2e00;
-}
-
-.why-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
-  max-width: 1000px;
-  margin: auto;
-}
-
-.why-card {
-  background: #fff4dc;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-}
-
-.why-card h3 {
+  font-size: 2.5rem;
   margin-bottom: 10px;
   color: #5a2e00;
 }
 
-.why-card p {
+.hero p {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
   color: #3a1f00;
-  font-size: 16px;
 }
 
+.hero-btn {
+  display: inline-block;
+  padding: 12px 30px;
+  background: #25d366;
+  color: #fff;
+  border-radius: 30px;
+  font-weight: bold;
+  text-decoration: none;
+  transition: 0.3s;
+}
 
+.hero-btn:hover {
+  background: #1ebe57;
+}
 
+/* PRODUCT GRID */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin: 40px auto;
+  max-width: 1000px;
+}
+
+.product-card {
+  background: #fff4dc;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.product-card img {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.product-card h3 {
+  color: #5a2e00;
+  margin-bottom: 5px;
+}
+
+.product-card p {
+  color: #3a1f00;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.product-card .order-btn {
+  background: #25d366;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.product-card .order-btn:hover {
+  background: #1ebe57;
+}
+
+/* NAVBAR */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 40px;
+  background: #5a2e00;
+  color: #fff;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 20px;
+}
+
+.nav-links a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.nav-links a:hover {
+  text-decoration: underline;
+}
+
+/* FOOTER */
 .footer {
   background: #5a2e00;
   color: #fff;
