@@ -12,7 +12,7 @@ export default function Home() {
 
   return (
     <>
-      {/* HERO BANNER */}
+      {/* ================= HERO BANNER ================= */}
       <section className="hero">
         <div className="hero-text">
           <h1 className={show ? "hero-title show" : "hero-title"}>
@@ -24,17 +24,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ABOUT */}
-      <section className="about">
+      {/* ================= ABOUT ================= */}
+      <section className="about" id="about">
         <h2>About BiharBite</h2>
         <p>
           BiharBite brings the authentic taste of Bihar’s traditional sweets
-          directly to your home. Every product is handmade with love and purity.
+          directly to your home. Every product is handmade with love, purity,
+          and traditional recipes passed down generations.
         </p>
       </section>
 
-      {/* PRODUCTS */}
-      <section className="products">
+      {/* ================= PRODUCTS ================= */}
+      <section className="products" id="products">
         <h2>BiharBite Specials</h2>
 
         <div className="product-grid">
@@ -51,24 +52,27 @@ export default function Home() {
         </div>
       </section>
 
-      {/* WHY CHOOSE */}
+      {/* ================= WHY CHOOSE ================= */}
       <section className="why">
         <h2>Why Choose BiharBite?</h2>
         <ul>
           <li>✔ 100% Pure Ingredients</li>
-          <li>✔ Traditional Recipes</li>
-          <li>✔ Trusted by Customers</li>
+          <li>✔ Traditional Bihari Recipes</li>
+          <li>✔ Fresh & Hygienic Preparation</li>
+          <li>✔ Trusted by Customers Across India</li>
         </ul>
       </section>
 
-      {/* TESTIMONIALS */}
+      {/* ================= TESTIMONIALS ================= */}
       <section className="testimonials">
         <h2>What People Say</h2>
+
         <div className="testimonial">
-          “Exactly like home-made sweets from Bihar.”
+          “Exactly like home-made sweets from Bihar. Loved the taste!”
         </div>
+
         <div className="testimonial">
-          “Best quality and taste. Highly recommended!”
+          “Best quality sweets I’ve ordered online. Highly recommended.”
         </div>
       </section>
     </>

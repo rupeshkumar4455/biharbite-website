@@ -1,25 +1,44 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 
 export default function Navbar() {
   const { cart } = useCart();
+  const navigate = useNavigate();
+
+  const scrollToSection = (id) => {
+    navigate("/");
+    setTimeout(() => {
+      const section = document.getElementById(id);
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 200);
+  };
 
   return (
     <header className="navbar">
-      <div className="nav-left">
-        <span className="logo">🍬</span>
-        <span className="brand">BiharBite</span>
+      {/* LEFT: BRAND */}
+      <div className="navbar-left" onClick={() => navigate("/")}>
+        BiharBite
       </div>
 
-      {/* RIGHT SIDE MENU */}
-      <nav className="nav-right-menu">
-        <Link to="/">Home</Link>
-        <Link to="/#about">About</Link>
-        <Link to="/#products">Products</Link>
-        <Link to="/cart" className="cart-link">
-          🛒 Cart ({cart.length})
+      {/* RIGHT: LINKS */}
+      <nav className="navbar-right">
+        <span onClick={() => navigate("/")}>Home</span>
+
+        <span onClick={() => scrollToSection("about")}>
+          About
+        </span>
+
+        <span onClick={() => scrollToSection("products")}>
+          Products
+        </span>
+
+        <Link to="/cart">
+          Cart{cart.length > 0 ? ` (${cart.length})` : ""}
         </Link>
-        <Link to="/admin" className="admin-btn">
+
+        <Link to="/admin/login" className="admin-btn">
           Admin
         </Link>
       </nav>

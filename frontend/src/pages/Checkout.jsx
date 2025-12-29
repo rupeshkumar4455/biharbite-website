@@ -1,61 +1,49 @@
 import { useCart } from "../context/CartContext";
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Checkout() {
-  const { cart, totalPrice } = useCart();
-  const [paymentMethod, setPaymentMethod] = useState("COD");
+  const { cart, clearCart } = useCart();
+  const navigate = useNavigate();
 
-  const placeOrder = async () => {
-    const orderData = {
-      items: cart,
-      total: totalPrice,
-      paymentMethod,
-      status: paymentMethod === "COD" ? "Pending" : "Paid",
-    };
+  const totalAmount = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
 
-    const res = await fetch("http://localhost:5000/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(orderData),
-    });
+  const placeOrder = async (method) => {
+    await fetch(
+      "https://biharbite-backend.onrender.com/api/orders",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: cart,
+          total: totalAmount,
+          paymentMethod: method,
+        }),
+      }
+    );
 
-    if (res.ok) {
-      alert("✅ Order placed successfully!");
-    } else {
-      alert("❌ Order failed");
-    }
+    clearCart();
+    alert("Order placed successfully!");
+    navigate("/");
   };
 
   return (
-    <div className="checkout-page">
-      <h2>Checkout</h2>
-
+    <div className="checkout-wrapper">
       <div className="checkout-box">
-        <h3>Order Total: ₹{totalPrice}</h3>
+        <h2>Checkout</h2>
+        <p>Total Amount: ₹{totalAmount}</p>
 
-        <h4>Select Payment Method</h4>
+        <div className="payment-actions">
+          <button onClick={() => placeOrder("COD")}>
+            Cash on Delivery
+          </button>
 
-        <label>
-          <input
-            type="radio"
-            checked={paymentMethod === "COD"}
-            onChange={() => setPaymentMethod("COD")}
-          />
-          Cash on Delivery
-        </label>
-
-        <label>
-          <input
-            type="radio"
-            checked={paymentMethod === "ONLINE"}
-            onChange={() => setPaymentMethod("ONLINE")}
-          />
-          Online Payment (Razorpay – next step)
-        </label>
-
-        <button onClick={placeOrder} className="place-order-btn">
-          Place Order
-        </button>
+          <button className="online-btn">
+            Pay Online (Next Step)
+          </button>
+        </div>
       </div>
     </div>
   );
