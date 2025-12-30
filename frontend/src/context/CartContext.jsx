@@ -5,22 +5,22 @@ const CartContext = createContext();
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
 
+  // ADD TO CART
   const addToCart = (product) => {
     setCartItems((prev) => {
-      const existing = prev.find((i) => i.id === product.id);
-
-      if (existing) {
+      const exist = prev.find((i) => i.id === product.id);
+      if (exist) {
         return prev.map((i) =>
           i.id === product.id
             ? { ...i, qty: i.qty + 1 }
             : i
         );
       }
-
       return [...prev, { ...product, qty: 1 }];
     });
   };
 
+  // INCREASE
   const increaseQty = (id) => {
     setCartItems((prev) =>
       prev.map((i) =>
@@ -29,6 +29,7 @@ export const CartProvider = ({ children }) => {
     );
   };
 
+  // DECREASE
   const decreaseQty = (id) => {
     setCartItems((prev) =>
       prev
@@ -39,10 +40,14 @@ export const CartProvider = ({ children }) => {
     );
   };
 
+  // REMOVE
   const removeFromCart = (id) => {
-    setCartItems((prev) => prev.filter((i) => i.id !== id));
+    setCartItems((prev) =>
+      prev.filter((i) => i.id !== id)
+    );
   };
 
+  // CLEAR
   const clearCart = () => setCartItems([]);
 
   return (

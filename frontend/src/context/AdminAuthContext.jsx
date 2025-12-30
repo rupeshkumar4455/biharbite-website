@@ -1,33 +1,29 @@
 import { createContext, useContext, useState } from "react";
 
-const AdminAuthContext = createContext(null);
+const AdminAuthContext = createContext();
 
 export const AdminAuthProvider = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(
-    localStorage.getItem("isAdmin") === "true"
+    localStorage.getItem("admin") === "true"
   );
 
   const loginAdmin = () => {
-    localStorage.setItem("isAdmin", "true");
     setIsAdmin(true);
+    localStorage.setItem("admin", "true");
   };
 
   const logoutAdmin = () => {
-    localStorage.removeItem("isAdmin");
     setIsAdmin(false);
+    localStorage.removeItem("admin");
   };
 
   return (
-    <AdminAuthContext.Provider value={{ isAdmin, loginAdmin, logoutAdmin }}>
+    <AdminAuthContext.Provider
+      value={{ isAdmin, loginAdmin, logoutAdmin }}
+    >
       {children}
     </AdminAuthContext.Provider>
   );
 };
 
-export const useAdminAuth = () => {
-  const ctx = useContext(AdminAuthContext);
-  if (!ctx) {
-    throw new Error("useAdminAuth must be used inside AdminAuthProvider");
-  }
-  return ctx;
-};
+export const useAdminAuth = () => useContext(AdminAuthContext);

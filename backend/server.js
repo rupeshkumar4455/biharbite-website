@@ -7,6 +7,9 @@ import mongoose from "mongoose";
 import authRoutes from "./routes/authRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+
+
 
 dotenv.config();
 
@@ -48,6 +51,8 @@ app.get("/", (req, res) => {
 
 // Auth (Register / Login)
 app.use("/api/auth", authRoutes);
+app.use("/api/auth", authRoutes);
+
 
 // Products
 app.use("/api/products", productRoutes);

@@ -563,3 +563,79 @@ h2 {
   border: none;
   border-radius: 6px;
 }
+
+
+.auth-page {
+  min-height: 70vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-box {
+  background: #fff;
+  padding: 30px;
+  width: 320px;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.auth-box h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.auth-box input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.auth-box button {
+  width: 100%;
+  padding: 10px;
+  background: #c65b12;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.auth-box button:hover {
+  background: #a94b0e;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* ORDER TIMELINE */
+.timeline {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.timeline div {
+  flex: 1;
+  padding: 6px;
+  background: #eee;
+  text-align: center;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.timeline .done {
+  background: #2ecc71;
+  color: white;
+}
+
+
+
+
+

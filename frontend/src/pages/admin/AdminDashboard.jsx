@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
+import { useAdminAuth } from "../../context/AdminAuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminDashboard() {
+  const { logoutAdmin } = useAdminAuth();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
 
   const fetchOrders = async () => {
@@ -27,40 +31,21 @@ export default function AdminDashboard() {
     fetchOrders();
   };
 
-  const deleteOrder = async (id) => {
-    if (!window.confirm("Delete this order permanently?")) return;
-
-    await fetch(
-      `https://biharbite-backend.onrender.com/api/orders/${id}`,
-      { method: "DELETE" }
-    );
-    fetchOrders();
-  };
-
-  const totalRevenue = orders.reduce(
-    (sum, o) => sum + (o.total || 0),
-    0
-  );
-
   return (
     <div className="admin-page">
       <div className="admin-box">
-        <h2>Admin Dashboard</h2>
-
-        {/* STATS */}
-        <div className="admin-stats">
-          <div className="stat-card">
-            <p>Total Orders</p>
-            <h3>{orders.length}</h3>
-          </div>
-
-          <div className="stat-card">
-            <p>Total Revenue</p>
-            <h3>₹{totalRevenue}</h3>
-          </div>
+        <div className="admin-header">
+          <h2>Admin Dashboard</h2>
+          <button
+            onClick={() => {
+              logoutAdmin();
+              navigate("/admin/login");
+            }}
+          >
+            Logout
+          </button>
         </div>
 
-        {/* ORDERS TABLE */}
         <table className="admin-table">
           <thead>
             <tr>
@@ -70,7 +55,6 @@ export default function AdminDashboard() {
               <th>Payment</th>
               <th>Status</th>
               <th>Date</th>
-              <th>Action</th>
             </tr>
           </thead>
 
@@ -78,7 +62,6 @@ export default function AdminDashboard() {
             {orders.map((o) => (
               <tr key={o._id}>
                 <td>{o._id.slice(-6)}</td>
-
                 <td>
                   {o.items.map((i, idx) => (
                     <div key={idx}>
@@ -86,10 +69,8 @@ export default function AdminDashboard() {
                     </div>
                   ))}
                 </td>
-
                 <td>₹{o.total}</td>
                 <td>{o.paymentMethod}</td>
-
                 <td>
                   <select
                     value={o.status}
@@ -98,22 +79,13 @@ export default function AdminDashboard() {
                     }
                   >
                     <option>Pending</option>
-                     <option>Paid</option>
+                    <option>Payment Pending</option>
+                    <option>Paid</option>
                     <option>Delivered</option>
                   </select>
                 </td>
-
                 <td>
                   {new Date(o.createdAt).toLocaleString()}
-                </td>
-
-                <td>
-                  <button
-                    className="delete-btn"
-                    onClick={() => deleteOrder(o._id)}
-                  >
-                    Delete
-                  </button>
                 </td>
               </tr>
             ))}

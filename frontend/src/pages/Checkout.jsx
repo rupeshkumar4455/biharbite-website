@@ -34,6 +34,8 @@ export default function Checkout() {
     navigate("/order-placed");
   };
 
+
+  
   // PHONEPE / UPI
   const startUPIPayment = async () => {
     setShowUPI(true);

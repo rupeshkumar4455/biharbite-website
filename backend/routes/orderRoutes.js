@@ -47,5 +47,13 @@ router.delete("/:id", async (req, res) => {
   res.json({ success: true });
 });
 
+router.get("/user/:userId", async (req, res) => {
+  const orders = await Order.find({ userId: req.params.userId }).sort({
+    createdAt: -1,
+  });
+  res.json(orders);
+});
+
+
 
 export default router;
