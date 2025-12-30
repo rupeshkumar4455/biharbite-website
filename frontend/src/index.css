@@ -500,3 +500,66 @@ h2 {
   border-radius: 6px;
   cursor: pointer;
 }
+
+
+
+/* UPI PAYMENT */
+.upi-box {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.upi-box img {
+  margin: 15px auto;
+}
+
+.upi-apps {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.upi-apps a {
+  background: #eee;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: black;
+  font-size: 14px;
+}
+
+.confirm-btn {
+  margin-top: 10px;
+  padding: 10px 18px;
+  background: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 6px;
+}
+
+
+
+/* PAYMENT SUCCESS */
+.success-page {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.success-page h2 {
+  color: #2ecc71;
+  margin-bottom: 10px;
+}
+
+.success-page button {
+  margin-top: 15px;
+  padding: 10px 18px;
+  background: #5a2d0c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+}

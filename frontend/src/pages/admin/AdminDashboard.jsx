@@ -98,6 +98,7 @@ export default function AdminDashboard() {
                     }
                   >
                     <option>Pending</option>
+                     <option>Paid</option>
                     <option>Delivered</option>
                   </select>
                 </td>

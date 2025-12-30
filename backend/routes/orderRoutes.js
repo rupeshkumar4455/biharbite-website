@@ -41,4 +41,11 @@ router.put("/:id", async (req, res) => {
   res.json({ success: true });
 });
 
+// DELETE ORDER
+router.delete("/:id", async (req, res) => {
+  await Order.findByIdAndDelete(req.params.id);
+  res.json({ success: true });
+});
+
+
 export default router;
