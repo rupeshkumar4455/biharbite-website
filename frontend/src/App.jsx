@@ -1,83 +1,41 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+/* CONTEXT PROVIDERS */
 import { CartProvider } from "./context/CartContext";
-import { AdminAuthProvider, useAdminAuth } from "./context/AdminAuthContext";
+import { AdminAuthProvider } from "./context/AdminAuthContext";
 
-import Layout from "./components/Layout";
+/* COMPONENTS */
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
+/* PAGES */
 import Home from "./pages/Home";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 
-/* 🔐 PROTECTED ADMIN ROUTE */
-function AdminRoute({ children }) {
-  const { isAdmin } = useAdminAuth();
-  return isAdmin ? children : <Navigate to="/admin/login" replace />;
-}
-
 export default function App() {
   return (
     <CartProvider>
       <AdminAuthProvider>
         <BrowserRouter>
-          <Routes>
+          <Navbar />
 
-            {/* PUBLIC ROUTES */}
-            <Route
-              path="/"
-              element={
-                <Layout>
-                  <Home />
-                </Layout>
-              }
-            />
+          <main>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/admin" element={<AdminLogin />} />
+              <Route
+                path="/admin/dashboard"
+                element={<AdminDashboard />}
+              />
+            </Routes>
+          </main>
 
-            <Route
-              path="/cart"
-              element={
-                <Layout>
-                  <Cart />
-                </Layout>
-              }
-            />
-
-            <Route
-              path="/checkout"
-              element={
-                <Layout>
-                  <Checkout />
-                </Layout>
-              }
-            />
-
-            {/* 🔑 ADMIN ROUTES */}
-            <Route
-              path="/admin"
-              element={<Navigate to="/admin/login" replace />}
-            />
-
-            <Route
-              path="/admin/login"
-              element={
-                <Layout>
-                  <AdminLogin />
-                </Layout>
-              }
-            />
-
-            <Route
-              path="/admin/dashboard"
-              element={
-                <AdminRoute>
-                  <Layout>
-                    <AdminDashboard />
-                  </Layout>
-                </AdminRoute>
-              }
-            />
-
-          </Routes>
+          <Footer />
         </BrowserRouter>
       </AdminAuthProvider>
     </CartProvider>

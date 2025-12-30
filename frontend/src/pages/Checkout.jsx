@@ -2,46 +2,43 @@ import { useCart } from "../context/CartContext";
 import { useNavigate } from "react-router-dom";
 
 export default function Checkout() {
-  const { cart, clearCart } = useCart();
+  const { cartItems, clearCart } = useCart();
   const navigate = useNavigate();
 
-  const totalAmount = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+  // ✅ TOTAL CALCULATION (IMPORTANT)
+  const totalAmount = cartItems.reduce(
+    (sum, item) => sum + Number(item.price) * Number(item.qty),
     0
   );
 
-  const placeOrder = async (method) => {
-    await fetch(
-      "https://biharbite-backend.onrender.com/api/orders",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: cart,
-          total: totalAmount,
-          paymentMethod: method,
-        }),
-      }
-    );
+  const placeOrder = (method) => {
+    if (cartItems.length === 0) {
+      alert("Cart is empty");
+      return;
+    }
 
+    alert(`Order placed successfully!\nPayment Method: ${method}`);
     clearCart();
-    alert("Order placed successfully!");
     navigate("/");
   };
 
   return (
     <div className="checkout-wrapper">
-      <div className="checkout-box">
+      <div className="checkout-card">
         <h2>Checkout</h2>
-        <p>Total Amount: ₹{totalAmount}</p>
 
-        <div className="payment-actions">
-          <button onClick={() => placeOrder("COD")}>
+        {/* ✅ TOTAL DISPLAY */}
+        <p className="checkout-total">
+          Total Amount: <span>₹{totalAmount}</span>
+        </p>
+
+        <div className="payment-buttons">
+          <button onClick={() => placeOrder("Cash on Delivery")}>
             Cash on Delivery
           </button>
 
-          <button className="online-btn">
-            Pay Online (Next Step)
+          <button className="online-btn" onClick={() => placeOrder("Online")}>
+            Pay Online
           </button>
         </div>
       </div>

@@ -2,46 +2,38 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 
 export default function Navbar() {
-  const { cart } = useCart();
   const navigate = useNavigate();
 
-  const scrollToSection = (id) => {
-    navigate("/");
-    setTimeout(() => {
-      const section = document.getElementById(id);
-      if (section) {
-        section.scrollIntoView({ behavior: "smooth" });
-      }
-    }, 200);
-  };
+  // 👇 now this will NEVER be undefined
+  const { cartItems } = useCart();
 
   return (
     <header className="navbar">
-      {/* LEFT: BRAND */}
-      <div className="navbar-left" onClick={() => navigate("/")}>
+      <div
+        className="logo"
+        onClick={() => navigate("/")}
+        style={{ cursor: "pointer" }}
+      >
         BiharBite
       </div>
 
-      {/* RIGHT: LINKS */}
-      <nav className="navbar-right">
-        <span onClick={() => navigate("/")}>Home</span>
+      <ul>
+        <li><Link to="/">Home</Link></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#products">Products</a></li>
 
-        <span onClick={() => scrollToSection("about")}>
-          About
-        </span>
+        <li>
+          <Link to="/cart">
+            Cart{cartItems.length > 0 && ` (${cartItems.length})`}
+          </Link>
+        </li>
 
-        <span onClick={() => scrollToSection("products")}>
-          Products
-        </span>
-
-        <Link to="/cart">
-          Cart{cart.length > 0 ? ` (${cart.length})` : ""}
-        </Link>
-
-        <Link to="/admin/login" className="admin-btn">
-          Admin
-        </Link>
-      </nav>
+        <li>
+          <Link className="admin-btn" to="/admin">
+            Admin
+          </Link>
+        </li>
+      </ul>
     </header>
   );
 }
