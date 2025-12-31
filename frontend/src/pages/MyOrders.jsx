@@ -1,42 +1,51 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
+const orders = [
+  {
+    id: "ORD123",
+    status: "Delivered",
+    steps: ["Placed", "Paid", "Shipped", "Delivered"],
+  },
+  {
+    id: "ORD124",
+    status: "Shipped",
+    steps: ["Placed", "Paid", "Shipped"],
+  },
+];
 
-export default function MyOrders() {
-  const { user } = useAuth();
-  const [orders, setOrders] = useState([]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    fetch(
-      `https://biharbite-backend.onrender.com/api/orders/user/${user.id}`
-    )
-      .then((res) => res.json())
-      .then(setOrders);
-  }, [user]);
-
+const MyOrders = () => {
   return (
-    <div className="orders-page">
-      <h2>My Orders</h2>
+    <div className="max-w-5xl mx-auto px-4 py-12">
+      <h2 className="text-2xl font-semibold mb-8">My Orders</h2>
 
-      {orders.map((o) => (
-        <div className="order-card" key={o._id}>
-          <p><b>Total:</b> ₹{o.total}</p>
-          <p><b>Payment:</b> {o.paymentMethod}</p>
+      {orders.map((order) => (
+        <div
+          key={order.id}
+          className="bg-white border rounded-lg p-6 mb-6"
+        >
+          <div className="flex justify-between mb-4">
+            <span className="font-medium">Order ID: {order.id}</span>
+            <span className="text-primary font-semibold">
+              {order.status}
+            </span>
+          </div>
 
-          <div className="timeline">
-            <div className={o.status !== "Pending" ? "done" : ""}>
-              Order Placed
-            </div>
-            <div className={o.status === "Paid" || o.status === "Delivered" ? "done" : ""}>
-              Payment Confirmed
-            </div>
-            <div className={o.status === "Delivered" ? "done" : ""}>
-              Delivered
-            </div>
+          <div className="flex gap-4">
+            {order.steps.map((step, index) => (
+              <div key={index} className="flex-1 text-center">
+                <div
+                  className={`h-2 rounded ${
+                    index < order.steps.length
+                      ? "bg-primary"
+                      : "bg-gray-200"
+                  }`}
+                />
+                <p className="text-xs mt-2">{step}</p>
+              </div>
+            ))}
           </div>
         </div>
       ))}
     </div>
   );
-}
+};
+
+export default MyOrders;

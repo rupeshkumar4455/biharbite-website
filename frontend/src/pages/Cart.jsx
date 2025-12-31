@@ -1,65 +1,71 @@
+import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
-import { useNavigate } from "react-router-dom";
 
-export default function Cart() {
-  const {
-    cartItems,
-    increaseQty,
-    decreaseQty,
-    removeFromCart,
-  } = useCart();
+const Cart = () => {
+  const { cartItems } = useCart();
 
-  const navigate = useNavigate();
-
-  // ✅ TOTAL CALCULATION
   const total = cartItems.reduce(
-    (sum, item) => sum + Number(item.price) * Number(item.qty),
+    (sum, item) => sum + item.price * item.qty,
     0
   );
 
   if (cartItems.length === 0) {
-    return <h2 style={{ textAlign: "center" }}>Your cart is empty</h2>;
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center">
+        <h2 className="text-2xl font-semibold mb-2">
+          Your cart is empty
+        </h2>
+        <Link
+          to="/"
+          className="bg-black text-white px-6 py-2 rounded"
+        >
+          Shop Now
+        </Link>
+      </div>
+    );
   }
 
   return (
-    <div className="cart-container">
-      <h2>Your Cart</h2>
+    <div className="max-w-6xl mx-auto px-4 py-10 min-h-[70vh]">
+      <h2 className="text-2xl font-semibold mb-6">
+        Your Cart
+      </h2>
 
-      {cartItems.map((item) => (
-        <div className="cart-item" key={item.id}>
-          <div>
-            <strong>{item.name}</strong>
-            <p>₹{item.price}</p>
-          </div>
+      <table className="w-full border mb-6">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="p-3 text-left">Product</th>
+            <th>Qty</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {cartItems.map((item) => (
+            <tr key={item.id} className="border-t text-center">
+              <td className="p-3 text-left">
+                {item.name}
+              </td>
+              <td>{item.qty}</td>
+              <td>₹{item.price * item.qty}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-          <div className="qty-controls">
-            <button onClick={() => decreaseQty(item.id)}>-</button>
-            <span>{item.qty}</span>
-            <button onClick={() => increaseQty(item.id)}>+</button>
-          </div>
+      <div className="flex justify-between items-center">
+        <h3 className="text-xl font-semibold">
+          Total: ₹{total}
+        </h3>
 
-          <div>
-            <p>₹{item.price * item.qty}</p>
-            <button
-              className="remove-btn"
-              onClick={() => removeFromCart(item.id)}
-            >
-              Remove
-            </button>
-          </div>
-        </div>
-      ))}
-
-      {/* ✅ TOTAL DISPLAY */}
-      <div className="cart-summary">
-        <h3>Total: ₹{total}</h3>
-        <button
-          className="checkout-btn"
-          onClick={() => navigate("/checkout")}
+        <Link
+          to="/checkout"
+          className="bg-black text-white px-6 py-2 rounded"
         >
           Proceed to Checkout
-        </button>
+        </Link>
       </div>
     </div>
   );
-}
+};
+
+export default Cart;

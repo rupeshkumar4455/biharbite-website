@@ -1,93 +1,143 @@
-import { useCart } from "../context/CartContext";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
-export default function Checkout() {
+const Checkout = () => {
   const { cartItems, clearCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [showUPI, setShowUPI] = useState(false);
 
-  const totalAmount = cartItems.reduce(
-    (sum, item) => sum + Number(item.price) * Number(item.qty),
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const total = cartItems.reduce(
+    (sum, item) => sum + item.price * item.qty,
     0
   );
 
-  // 🔴 APNI REAL UPI ID DALO
-  const UPI_ID = "6268947041@ibl";
+  const placeOrder = async () => {
+    if (!user) {
+      alert("Please login first");
+      navigate("/login");
+      return;
+    }
 
-  const upiLink = `upi://pay?pa=${UPI_ID}&pn=BiharBite&am=${totalAmount}&cu=INR&tn=BiharBite%20Order`;
+    if (!paymentMethod) {
+      alert("Select payment method");
+      return;
+    }
 
-  // COD
-  const placeCOD = async () => {
-    await fetch("https://biharbite-backend.onrender.com/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        items: cartItems,
-        total: totalAmount,
-        paymentMethod: "COD",
-        status: "Pending",
-      }),
-    });
+    try {
+      setLoading(true);
 
-    clearCart();
-    navigate("/order-placed");
+      const res = await fetch("http://localhost:5000/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({
+          items: cartItems,
+          totalAmount: total,
+          paymentMethod,
+          status: "Pending",
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Order failed");
+      }
+
+      clearCart();              // 🔥 CLEAR CART
+      navigate("/");            // 🔥 GO TO HOME
+      alert("Order placed successfully");
+
+    } catch (err) {
+      alert("Order failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
-
-  
-  // PHONEPE / UPI
-  const startUPIPayment = async () => {
-    setShowUPI(true);
-
-    await fetch("https://biharbite-backend.onrender.com/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        items: cartItems,
-        total: totalAmount,
-        paymentMethod: "PHONEPE_UPI",
-        status: "Payment Pending",
-      }),
-    });
-  };
+  if (cartItems.length === 0) {
+    navigate("/cart");
+    return null;
+  }
 
   return (
-    <div className="checkout-wrapper">
-      <div className="checkout-card">
-        <h2>Checkout</h2>
-        <p>Total Amount: ₹{totalAmount}</p>
+    <div className="max-w-6xl mx-auto px-4 py-10 grid md:grid-cols-2 gap-8">
+      {/* PAYMENT */}
+      <div>
+        <h2 className="text-2xl font-semibold mb-4">
+          Checkout
+        </h2>
 
-        {!showUPI && (
-          <div className="payment-buttons">
-            <button onClick={placeCOD}>Cash on Delivery</button>
-            <button className="online-btn" onClick={startUPIPayment}>
-              Pay via PhonePe / UPI
-            </button>
+        <label className="block mb-2">
+          <input
+            type="radio"
+            name="payment"
+            value="UPI"
+            onChange={(e) => setPaymentMethod(e.target.value)}
+          />{" "}
+          UPI (PhonePe / GPay / Paytm)
+        </label>
+
+        <label className="block mb-4">
+          <input
+            type="radio"
+            name="payment"
+            value="COD"
+            onChange={(e) => setPaymentMethod(e.target.value)}
+          />{" "}
+          Cash on Delivery
+        </label>
+
+        {paymentMethod === "UPI" && (
+          <div className="bg-gray-100 p-3 mb-4 rounded">
+            <p className="font-semibold">UPI ID</p>
+            <p>6268947041@ibl</p>
           </div>
         )}
 
-        {showUPI && (
-          <div className="upi-box">
-            <h3>Scan & Pay</h3>
+        <button
+          onClick={placeOrder}
+          disabled={loading}
+          className="bg-black text-white px-6 py-2 rounded"
+        >
+          {loading ? "Placing Order..." : "Place Order"}
+        </button>
+      </div>
 
-            <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-                upiLink
-              )}`}
-              alt="UPI QR"
-            />
+      {/* SUMMARY */}
+      <div className="border p-4 rounded">
+        <h3 className="font-semibold mb-3">
+          Order Summary
+        </h3>
 
-            <p>
-              Complete payment using PhonePe / GPay / Paytm
-            </p>
-
-            <p style={{ fontSize: 13, color: "#b00" }}>
-              ⚠️ Payment will be verified by admin before confirmation
-            </p>
+        {cartItems.map((item) => (
+          <div
+            key={item.id}
+            className="flex justify-between mb-2"
+          >
+            <span>
+              {item.name} × {item.qty}
+            </span>
+            <span>
+              ₹{item.price * item.qty}
+            </span>
           </div>
-        )}
+        ))}
+
+        <hr className="my-3" />
+
+        <div className="flex justify-between font-semibold">
+          <span>Total</span>
+          <span>₹{total}</span>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default Checkout;

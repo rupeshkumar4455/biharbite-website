@@ -5,7 +5,7 @@ import "./ProductCard.css";
 export default function ProductCard({ product }) {
   const { addToCart } = useContext(CartContext);
 
-  const whatsappLink = `https://wa.me/91XXXXXXXXXX?text=I want to order ${product.name} for ₹${product.price}`;
+  const whatsappLink = `https://wa.me/91 6268947041?text=I want to order ${product.name} for ₹${product.price}`;
 
   return (
     <div className="product-card">

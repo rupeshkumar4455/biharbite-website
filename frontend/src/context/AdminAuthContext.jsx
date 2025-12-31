@@ -1,20 +1,26 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 const AdminAuthContext = createContext();
 
 export const AdminAuthProvider = ({ children }) => {
-  const [isAdmin, setIsAdmin] = useState(
-    localStorage.getItem("admin") === "true"
-  );
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // 🔑 restore admin state on app load
+  useEffect(() => {
+    const stored = localStorage.getItem("isAdmin");
+    if (stored === "true") {
+      setIsAdmin(true);
+    }
+  }, []);
 
   const loginAdmin = () => {
     setIsAdmin(true);
-    localStorage.setItem("admin", "true");
+    localStorage.setItem("isAdmin", "true");
   };
 
   const logoutAdmin = () => {
     setIsAdmin(false);
-    localStorage.removeItem("admin");
+    localStorage.removeItem("isAdmin");
   };
 
   return (

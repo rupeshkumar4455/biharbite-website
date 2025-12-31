@@ -1,58 +1,50 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
-// CONTEXTS
-import { CartProvider } from "./context/CartContext";
-import { AuthProvider } from "./context/AuthContext";
-import { AdminAuthProvider } from "./context/AdminAuthContext";
-
-// COMPONENTS
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
-// USER PAGES
 import Home from "./pages/Home";
 import Cart from "./pages/Cart";
-import Checkout from "./pages/Checkout";
 import Login from "./pages/Login";
-import MyOrders from "./pages/MyOrders";
 import Signup from "./pages/Signup";
+import MyOrders from "./pages/MyOrders";
+import Checkout from "./pages/Checkout";
 
-// ADMIN
+
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 
-export default function App() {
+import { AuthProvider } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext";
+import { AdminAuthProvider } from "./context/AdminAuthContext";
+ 
+
+const App = () => {
   return (
-    <AuthProvider>
-      <CartProvider>
+    <BrowserRouter>
+      <AuthProvider>
         <AdminAuthProvider>
-          <BrowserRouter>
+          <CartProvider>
             <Navbar />
 
-            <main>
-              <Routes>
-                {/* USER */}
-                <Route path="/" element={<Home />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/my-orders" element={<MyOrders />} />
-                <Route path="/signup" element={<Signup />} />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/my-orders" element={<MyOrders />} />
+              <Route path="/checkout" element={<Checkout />} />
 
 
-                {/* ADMIN */}
-                <Route path="/admin/login" element={<AdminLogin />} />
-                <Route
-                  path="/admin/dashboard"
-                  element={<AdminDashboard />}
-                />
-              </Routes>
-            </main>
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            </Routes>
 
             <Footer />
-          </BrowserRouter>
+          </CartProvider>
         </AdminAuthProvider>
-      </CartProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
-}
+};
+
+export default App;

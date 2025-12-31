@@ -1,66 +1,74 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-export default function Login() {
-  const navigate = useNavigate();
+const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const res = await fetch(
-      "https://biharbite-backend.onrender.com/api/auth/login",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: e.target.email.value,
-          password: e.target.password.value,
-        }),
+    try {
+      const res = await fetch(
+        "http://localhost:5000/api/auth/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || "Login failed");
+        return;
       }
-    );
 
-    const data = await res.json();
-
-    if (res.ok) {
-      login(data.user);
+      login(data); // save user + token
       navigate("/");
-    } else {
-      alert(data.message || "Login failed");
+    } catch {
+      alert("Server error");
     }
   };
 
   return (
-    <div className="auth-page">
-      <form className="auth-box" onSubmit={handleLogin}>
-        <h2>Login</h2>
+    <div className="min-h-[70vh] flex items-center justify-center">
+      <form
+        onSubmit={handleSubmit}
+        className="border p-6 w-full max-w-md"
+      >
+        <h2 className="text-2xl font-semibold mb-4">
+          Login
+        </h2>
 
         <input
           type="email"
-          name="email"
           placeholder="Email"
+          className="w-full border p-2 mb-3"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
 
         <input
           type="password"
-          name="password"
           placeholder="Password"
+          className="w-full border p-2 mb-4"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           required
         />
 
-        <button type="submit">Login</button>
-
-        <p style={{ marginTop: "10px", fontSize: "14px" }}>
-          New user?{" "}
-          <span
-            style={{ color: "#c65b12", cursor: "pointer" }}
-            onClick={() => navigate("/signup")}
-          >
-            Create account
-          </span>
-        </p>
+        <button className="w-full bg-black text-white py-2">
+          Login
+        </button>
       </form>
     </div>
   );
-}
+};
+
+export default Login;
