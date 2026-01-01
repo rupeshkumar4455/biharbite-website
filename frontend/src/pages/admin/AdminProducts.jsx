@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { API_BASE } from "../../utils/api";
 import { useAuth } from "../../context/AuthContext";
+import { API_BASE } from "../../utils/api";
 
 const AdminProducts = () => {
   const { user } = useAuth();
@@ -9,6 +9,7 @@ const AdminProducts = () => {
     name: "",
     price: "",
     image: "",
+    description: "",
   });
 
   const fetchProducts = async () => {
@@ -21,7 +22,9 @@ const AdminProducts = () => {
     fetchProducts();
   }, []);
 
-  const addProduct = async () => {
+  const submitHandler = async (e) => {
+    e.preventDefault();
+
     await fetch(`${API_BASE}/api/products`, {
       method: "POST",
       headers: {
@@ -30,7 +33,8 @@ const AdminProducts = () => {
       },
       body: JSON.stringify(form),
     });
-    setForm({ name: "", price: "", image: "" });
+
+    setForm({ name: "", price: "", image: "", description: "" });
     fetchProducts();
   };
 
@@ -45,48 +49,45 @@ const AdminProducts = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h2 className="text-2xl font-semibold mb-4">
-        Admin Product Management
-      </h2>
+    <div className="p-6">
+      <h2 className="text-xl font-bold mb-4">Manage Products</h2>
 
       {/* ADD PRODUCT */}
-      <div className="border p-4 mb-6">
+      <form onSubmit={submitHandler} className="mb-6 grid gap-2 max-w-md">
         <input
           placeholder="Name"
           value={form.name}
-          onChange={(e) =>
-            setForm({ ...form, name: e.target.value })
-          }
-          className="border p-2 mr-2"
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          className="border p-2"
         />
         <input
           placeholder="Price"
           value={form.price}
-          onChange={(e) =>
-            setForm({ ...form, price: e.target.value })
-          }
-          className="border p-2 mr-2"
+          onChange={(e) => setForm({ ...form, price: e.target.value })}
+          className="border p-2"
         />
         <input
           placeholder="Image URL"
           value={form.image}
-          onChange={(e) =>
-            setForm({ ...form, image: e.target.value })
-          }
-          className="border p-2 mr-2"
+          onChange={(e) => setForm({ ...form, image: e.target.value })}
+          className="border p-2"
         />
-        <button
-          onClick={addProduct}
-          className="bg-black text-white px-4 py-2"
-        >
-          Add
+        <textarea
+          placeholder="Description"
+          value={form.description}
+          onChange={(e) =>
+            setForm({ ...form, description: e.target.value })
+          }
+          className="border p-2"
+        />
+        <button className="bg-black text-white py-2">
+          Add Product
         </button>
-      </div>
+      </form>
 
       {/* PRODUCT LIST */}
       <table className="w-full border">
-        <thead>
+        <thead className="bg-gray-100">
           <tr>
             <th>Name</th>
             <th>Price</th>
@@ -95,13 +96,13 @@ const AdminProducts = () => {
         </thead>
         <tbody>
           {products.map((p) => (
-            <tr key={p._id}>
+            <tr key={p._id} className="border-t">
               <td>{p.name}</td>
               <td>₹{p.price}</td>
               <td>
                 <button
                   onClick={() => deleteProduct(p._id)}
-                  className="text-red-500"
+                  className="text-red-600"
                 >
                   Delete
                 </button>

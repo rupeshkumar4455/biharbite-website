@@ -1,7 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
 import { API_BASE } from "../utils/api";
 
 const Checkout = () => {
@@ -9,41 +9,25 @@ const Checkout = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [paymentMethod, setPaymentMethod] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("UPI");
+  const [placing, setPlacing] = useState(false);
+  const [error, setError] = useState("");
 
   const totalAmount = cartItems.reduce(
     (sum, item) => sum + item.price * item.qty,
     0
   );
 
-  // 🔥 YOUR UPI DETAILS (CHANGE ONLY THIS IF NEEDED)
-  const UPI_ID = "6268947041@ibl";
-  const PAYEE_NAME = "BiharBite";
-
-  // 🔥 UPI PAYMENT URL
-  const upiUrl = `upi://pay?pa=${UPI_ID}&pn=${PAYEE_NAME}&am=${totalAmount}&cu=INR`;
-
-  // 🔥 AUTO QR GENERATION
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
-    upiUrl
-  )}`;
-
   const placeOrder = async () => {
-    if (!user || !user.token) {
-      alert("Please login first");
+    if (!user) {
       navigate("/login");
       return;
     }
 
-    if (!paymentMethod) {
-      alert("Please select payment method");
-      return;
-    }
+    setPlacing(true);
+    setError("");
 
     try {
-      setLoading(true);
-
       const res = await fetch(`${API_BASE}/api/orders`, {
         method: "POST",
         headers: {
@@ -51,125 +35,53 @@ const Checkout = () => {
           Authorization: `Bearer ${user.token}`,
         },
         body: JSON.stringify({
-          items: cartItems,
+          items: cartItems.map((i) => ({
+            name: i.name,
+            qty: i.qty,
+            price: i.price,
+          })),
           totalAmount,
           paymentMethod,
-          status: "Pending",
         }),
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        throw new Error(data.message || "Order failed");
+        setError("Order failed. Try again.");
+        setPlacing(false);
+        return;
       }
 
       clearCart();
       navigate("/my-orders");
-    } catch (err) {
-      alert(err.message || "Order failed");
+    } catch {
+      setError("Backend not reachable");
     } finally {
-      setLoading(false);
+      setPlacing(false);
     }
   };
 
   if (cartItems.length === 0) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        Your cart is empty
+        Cart is empty
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10 grid md:grid-cols-2 gap-8">
-      
-      {/* PAYMENT SECTION */}
-      <div>
-        <h2 className="text-2xl font-semibold mb-4">
-          Payment Method
-        </h2>
-
-        <label className="block mb-3">
-          <input
-            type="radio"
-            name="payment"
-            value="UPI"
-            onChange={() => setPaymentMethod("UPI")}
-          />{" "}
-          Pay via UPI (PhonePe / GPay / Paytm)
-        </label>
-
-        <label className="block mb-4">
-          <input
-            type="radio"
-            name="payment"
-            value="COD"
-            onChange={() => setPaymentMethod("COD")}
-          />{" "}
-          Cash on Delivery (COD)
-        </label>
-
-        {/* 🔥 UPI DETAILS */}
-        {paymentMethod === "UPI" && (
-          <div className="border rounded p-4 mb-4 bg-gray-50">
-            <p className="font-semibold mb-3 text-lg">
-              Scan & Pay using UPI
-            </p>
-
-            <img
-              src={qrCodeUrl}
-              alt="UPI QR"
-              className="w-48 mb-4 border"
-            />
-
-            {/* ✅ UPI ID CLEARLY VISIBLE */}
-            <p className="text-sm mb-1">
-              <span className="font-semibold">UPI ID:</span>{" "}
-              <span className="font-mono text-black">
-                {UPI_ID}
-              </span>
-            </p>
-
-            <p className="text-sm mb-3">
-              <span className="font-semibold">Amount:</span>{" "}
-              ₹{totalAmount}
-            </p>
-
-            <a
-              href={upiUrl}
-              className="inline-block text-blue-600 text-sm underline"
-            >
-              Open UPI App
-            </a>
-          </div>
-        )}
-
-        {paymentMethod === "COD" && (
-          <p className="text-sm text-gray-600 mb-4">
-            Pay in cash when your order is delivered.
-          </p>
-        )}
-
-        <button
-          onClick={placeOrder}
-          disabled={loading}
-          className="bg-black text-white px-6 py-2 rounded"
-        >
-          {loading ? "Placing Order..." : "Place Order"}
-        </button>
-      </div>
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      <h2 className="text-2xl font-semibold mb-6">
+        Checkout
+      </h2>
 
       {/* ORDER SUMMARY */}
-      <div className="border rounded p-4">
-        <h3 className="font-semibold mb-4">
-          Order Summary
-        </h3>
+      <div className="border rounded p-4 mb-6">
+        <h3 className="font-semibold mb-3">Order Summary</h3>
 
         {cartItems.map((item) => (
           <div
             key={item.id}
-            className="flex justify-between mb-2 text-sm"
+            className="flex justify-between text-sm mb-2"
           >
             <span>
               {item.name} × {item.qty}
@@ -180,13 +92,61 @@ const Checkout = () => {
           </div>
         ))}
 
-        <hr className="my-3" />
-
-        <div className="flex justify-between font-semibold">
+        <div className="border-t mt-3 pt-3 font-semibold flex justify-between">
           <span>Total</span>
           <span>₹{totalAmount}</span>
         </div>
       </div>
+
+      {/* PAYMENT METHOD */}
+      <div className="border rounded p-4 mb-6">
+        <h3 className="font-semibold mb-3">Payment Method</h3>
+
+        <label className="flex items-center gap-2 mb-3">
+          <input
+            type="radio"
+            checked
+            readOnly
+          />
+          <span>UPI (PhonePe / GPay / Paytm)</span>
+        </label>
+
+        {/* UPI DETAILS */}
+        <div className="bg-gray-50 p-4 rounded text-center">
+          <p className="mb-2 font-medium">
+            Pay using UPI
+          </p>
+
+          <img
+            src="/images/upi-qr.png"
+            alt="UPI QR"
+            className="w-40 mx-auto mb-2"
+          />
+
+          <p className="text-sm">
+            UPI ID: <b>6268947041@ibl</b>
+          </p>
+
+          <p className="text-xs text-gray-500 mt-2">
+            Scan QR or pay using UPI ID, then place order
+          </p>
+        </div>
+      </div>
+
+      {/* PLACE ORDER */}
+      {error && (
+        <p className="text-red-600 mb-3">
+          {error}
+        </p>
+      )}
+
+      <button
+        onClick={placeOrder}
+        disabled={placing}
+        className="w-full bg-green-600 text-white py-3 rounded text-lg hover:bg-green-700 disabled:opacity-60"
+      >
+        {placing ? "Placing Order..." : "Place Order"}
+      </button>
     </div>
   );
 };

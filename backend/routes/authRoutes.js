@@ -5,8 +5,10 @@ import User from "../models/User.js";
 
 const router = express.Router();
 
-/* ================= TOKEN ================= */
-const generateToken = (id, isAdmin) => {
+/* ===============================
+   TOKEN GENERATOR
+   =============================== */
+const generateToken = (id, isAdmin = false) => {
   return jwt.sign(
     { id, isAdmin },
     process.env.JWT_SECRET,
@@ -14,14 +16,18 @@ const generateToken = (id, isAdmin) => {
   );
 };
 
-/* ================= REGISTER (USER) ================= */
+/* ===============================
+   REGISTER (USER)
+   =============================== */
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const exists = await User.findOne({ email });
-    if (exists) {
-      return res.status(400).json({ message: "User already exists" });
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res
+        .status(400)
+        .json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -37,23 +43,25 @@ router.post("/register", async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      isAdmin: false,
-      token: generateToken(user._id, false),
+      isAdmin: user.isAdmin,
+      token: generateToken(user._id, user.isAdmin),
     });
-  } catch (err) {
-    console.error("REGISTER ERROR:", err);
+  } catch (error) {
+    console.error("REGISTER ERROR:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-/* ================= LOGIN (ADMIN + USER) ================= */
+/* ===============================
+   LOGIN (USER + ADMIN)
+   =============================== */
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    /* 🔥🔥🔥 ADMIN LOGIN — MUST BE FIRST 🔥🔥🔥 */
+    /* 🔐 ADMIN LOGIN */
     if (email === "admin" && password === "admin123") {
-      return res.status(200).json({
+      return res.json({
         _id: "admin",
         name: "Admin",
         email: "admin",
@@ -84,10 +92,13 @@ router.post("/login", async (req, res) => {
       isAdmin: user.isAdmin,
       token: generateToken(user._id, user.isAdmin),
     });
-  } catch (err) {
-    console.error("LOGIN ERROR:", err);
+  } catch (error) {
+    console.error("LOGIN ERROR:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
 
+/* ===============================
+   👇 THIS LINE FIXES YOUR ERROR
+   =============================== */
 export default router;

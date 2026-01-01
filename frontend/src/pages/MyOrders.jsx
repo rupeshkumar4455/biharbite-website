@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { API_BASE } from "../utils/api";
 
+const STATUS_STEPS = ["Placed", "Paid", "Delivered"];
+
 const MyOrders = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -11,14 +13,14 @@ const MyOrders = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // 🔒 Protect page (login required)
+  // 🔐 Protect page
   useEffect(() => {
     if (!user || !user.token) {
       navigate("/login");
     }
   }, [user, navigate]);
 
-  // 📦 Fetch my orders
+  // 📦 Fetch orders
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -31,7 +33,7 @@ const MyOrders = () => {
         const data = await res.json();
 
         if (!res.ok) {
-          setError(data.message || "Failed to fetch orders");
+          setError(data.message || "Failed to load orders");
           setLoading(false);
           return;
         }
@@ -70,36 +72,29 @@ const MyOrders = () => {
       </h2>
 
       {orders.length === 0 ? (
-        <p>You have not placed any orders yet.</p>
+        <p>No orders placed yet.</p>
       ) : (
         orders.map((order) => (
           <div
             key={order._id}
-            className="border rounded p-4 mb-4"
+            className="border rounded-lg p-5 mb-6 bg-white shadow-sm"
           >
-            <div className="flex justify-between mb-2 text-sm">
+            {/* Order Header */}
+            <div className="flex justify-between mb-4 text-sm text-gray-600">
               <span>
-                <strong>Order ID:</strong>{" "}
-                {order._id}
+                <b>Order ID:</b> {order._id}
               </span>
               <span>
-                <strong>Status:</strong>{" "}
-                {order.orderStatus}
+                <b>Total:</b> ₹{order.totalAmount}
               </span>
             </div>
 
-            <div className="mb-2 text-sm">
-              <strong>Payment:</strong>{" "}
-              {order.paymentMethod} (
-              {order.paymentStatus})
-            </div>
-
-            <div className="mb-3">
-              <strong>Items:</strong>
-              {order.items.map((item, index) => (
+            {/* Items */}
+            <div className="mb-4">
+              {order.items.map((item, idx) => (
                 <div
-                  key={index}
-                  className="text-sm flex justify-between"
+                  key={idx}
+                  className="flex justify-between text-sm"
                 >
                   <span>
                     {item.name} × {item.qty}
@@ -111,8 +106,57 @@ const MyOrders = () => {
               ))}
             </div>
 
-            <div className="text-right font-semibold">
-              Total: ₹{order.totalAmount}
+            {/* 🔁 ORDER TRACKING TIMELINE */}
+            <div className="mt-6">
+              <h4 className="font-semibold mb-3">
+                Order Tracking
+              </h4>
+
+              <div className="flex justify-between items-center">
+                {STATUS_STEPS.map((step, index) => {
+                  const currentIndex =
+                    STATUS_STEPS.indexOf(order.orderStatus);
+
+                  const isCompleted = index <= currentIndex;
+
+                  return (
+                    <div
+                      key={step}
+                      className="flex-1 flex flex-col items-center"
+                    >
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                          isCompleted
+                            ? "bg-green-600 text-white"
+                            : "bg-gray-300 text-gray-600"
+                        }`}
+                      >
+                        {index + 1}
+                      </div>
+
+                      <span className="mt-2 text-xs text-center">
+                        {step}
+                      </span>
+
+                      {index !== STATUS_STEPS.length - 1 && (
+                        <div
+                          className={`h-1 w-full mt-2 ${
+                            isCompleted
+                              ? "bg-green-600"
+                              : "bg-gray-300"
+                          }`}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Payment info */}
+            <div className="mt-4 text-sm text-gray-600">
+              Payment: {order.paymentMethod} (
+              {order.paymentStatus})
             </div>
           </div>
         ))
