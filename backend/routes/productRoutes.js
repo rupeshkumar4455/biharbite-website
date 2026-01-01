@@ -4,53 +4,102 @@ import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-/* 🔓 PUBLIC: GET ALL PRODUCTS */
-router.get("/", async (req, res) => {
-  const products = await Product.find({ isActive: true });
-  res.json(products);
+/* ===============================
+   SEED PRODUCTS (RUN ONCE)
+   =============================== */
+router.get("/seed", async (req, res) => {
+  try {
+    await Product.deleteMany();
+
+    const products = await Product.insertMany([
+      {
+        name: "Anarsa",
+        price: 299,
+        image: "/images/anarsa.jpg",
+        description: "Traditional Bihari Anarsa made with rice & jaggery",
+        isActive: true,
+      },
+      {
+        name: "Khaja",
+        price: 249,
+        image: "/images/khaja.jpg",
+        description: "Crispy layered authentic Bihari Khaja",
+        isActive: true,
+      },
+      {
+        name: "Tilkut",
+        price: 199,
+        image: "/images/tilkut.jpg",
+        description: "Classic Tilkut made with sesame & jaggery",
+        isActive: true,
+      },
+      {
+        name: "BiharBite Combo",
+        price: 699,
+        image: "/images/combo.jpg",
+        description: "Anarsa + Khaja + Tilkut combo pack",
+        isActive: true,
+      },
+    ]);
+
+    res.json(products);
+  } catch (error) {
+    console.error("SEED ERROR:", error);
+    res.status(500).json({ message: "Seed failed" });
+  }
 });
 
-/* 🔐 ADMIN: ADD PRODUCT */
+/* ===============================
+   PUBLIC: GET PRODUCTS
+   =============================== */
+router.get("/", async (req, res) => {
+  try {
+    const products = await Product.find({ isActive: true });
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch products" });
+  }
+});
+
+/* ===============================
+   ADMIN: ADD PRODUCT
+   =============================== */
 router.post("/", protect, adminOnly, async (req, res) => {
   const { name, price, image, description } = req.body;
 
-  const product = await Product.create({
-    name,
-    price,
-    image,
-    description,
-  });
+  try {
+    const product = await Product.create({
+      name,
+      price,
+      image,
+      description,
+      isActive: true,
+    });
 
-  res.status(201).json(product);
-});
-
-/* 🔐 ADMIN: UPDATE PRODUCT */
-router.put("/:id", protect, adminOnly, async (req, res) => {
-  const product = await Product.findById(req.params.id);
-  if (!product) {
-    return res.status(404).json({ message: "Product not found" });
+    res.status(201).json(product);
+  } catch (error) {
+    res.status(500).json({ message: "Product create failed" });
   }
-
-  product.name = req.body.name || product.name;
-  product.price = req.body.price || product.price;
-  product.image = req.body.image || product.image;
-  product.description = req.body.description || product.description;
-
-  const updated = await product.save();
-  res.json(updated);
 });
 
-/* 🔐 ADMIN: DELETE PRODUCT */
+/* ===============================
+   ADMIN: DELETE PRODUCT
+   =============================== */
 router.delete("/:id", protect, adminOnly, async (req, res) => {
-  const product = await Product.findById(req.params.id);
-  if (!product) {
-    return res.status(404).json({ message: "Product not found" });
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    product.isActive = false;
+    await product.save();
+
+    res.json({ message: "Product removed" });
+  } catch (error) {
+    res.status(500).json({ message: "Delete failed" });
   }
-
-  product.isActive = false;
-  await product.save();
-
-  res.json({ message: "Product removed" });
 });
 
+/* 🔥 THIS IS THE MOST IMPORTANT LINE 🔥 */
 export default router;
