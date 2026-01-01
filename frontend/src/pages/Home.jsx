@@ -81,6 +81,32 @@ const Home = () => {
         </div>
       </section>
 
+          {/* 📖 ABOUT BIHARBITE */}
+      <section className="bg-white section">
+        <div className="max-w-5xl mx-auto text-center">
+          <h2 className="text-3xl mb-4">
+            About BiharBite
+          </h2>
+          <p className="text-gray-600 leading-relaxed">
+            BiharBite is a humble initiative to bring the
+            authentic taste of Bihar to your doorstep.
+            We specialize in traditional sweets like
+            <b> Anarsa, Khaja, Tilkut</b> and carefully
+            curated combo packs, prepared using age-old
+            recipes, pure ingredients, and hygienic
+            processes.
+          </p>
+          <p className="text-gray-600 mt-3">
+            Our mission is simple — preserve Bihar’s
+            culinary heritage and deliver it with the
+            quality and professionalism of modern
+            e-commerce platforms.
+          </p>
+        </div>
+      </section>
+
+
+
       {/* 🌟 Why Choose */}
       <section className="bg-gray-50 section">
         <h2 className="text-2xl text-center mb-8">
