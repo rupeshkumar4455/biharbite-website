@@ -1,37 +1,56 @@
 import express from "express";
 import Product from "../models/Product.js";
-import { protect } from "../middleware/authMiddleware.js";
-import adminMiddleware from "../middleware/adminMiddleware.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// 🔓 USER - GET ALL PRODUCTS
+/* 🔓 PUBLIC: GET ALL PRODUCTS */
 router.get("/", async (req, res) => {
-  const products = await Product.find();
+  const products = await Product.find({ isActive: true });
   res.json(products);
 });
 
-// 🔐 ADMIN - ADD PRODUCT
-router.post("/", protect, adminMiddleware, async (req, res) => {
-  const product = new Product(req.body);
-  const savedProduct = await product.save();
-  res.status(201).json(savedProduct);
+/* 🔐 ADMIN: ADD PRODUCT */
+router.post("/", protect, adminOnly, async (req, res) => {
+  const { name, price, image, description } = req.body;
+
+  const product = await Product.create({
+    name,
+    price,
+    image,
+    description,
+  });
+
+  res.status(201).json(product);
 });
 
-// 🔐 ADMIN - UPDATE PRODUCT
-router.put("/:id", protect, adminMiddleware, async (req, res) => {
-  const updated = await Product.findByIdAndUpdate(
-    req.params.id,
-    req.body,
-    { new: true }
-  );
+/* 🔐 ADMIN: UPDATE PRODUCT */
+router.put("/:id", protect, adminOnly, async (req, res) => {
+  const product = await Product.findById(req.params.id);
+  if (!product) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+
+  product.name = req.body.name || product.name;
+  product.price = req.body.price || product.price;
+  product.image = req.body.image || product.image;
+  product.description = req.body.description || product.description;
+
+  const updated = await product.save();
   res.json(updated);
 });
 
-// 🔐 ADMIN - DELETE PRODUCT
-router.delete("/:id", protect, adminMiddleware, async (req, res) => {
-  await Product.findByIdAndDelete(req.params.id);
-  res.json({ message: "Product deleted" });
+/* 🔐 ADMIN: DELETE PRODUCT */
+router.delete("/:id", protect, adminOnly, async (req, res) => {
+  const product = await Product.findById(req.params.id);
+  if (!product) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+
+  product.isActive = false;
+  await product.save();
+
+  res.json({ message: "Product removed" });
 });
 
 export default router;
