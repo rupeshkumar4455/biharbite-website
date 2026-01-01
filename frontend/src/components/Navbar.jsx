@@ -1,79 +1,62 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const { cartItems } = useCart();
-  const navigate = useNavigate();
-
-  const cartCount = cartItems.reduce(
-    (sum, item) => sum + item.qty,
-    0
-  );
-
-  const handleLogout = () => {
-    logout();
-    navigate("/");
-  };
 
   return (
-    <header className="border-b bg-white sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-        
-        {/* LOGO */}
-        <Link to="/" className="text-xl font-bold">
+    <nav className="bg-white shadow sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        {/* Logo */}
+        <Link to="/" className="text-xl font-bold text-green-700">
           Bihar<span className="text-orange-500">Bite</span>
         </Link>
 
-        {/* LINKS */}
-        <nav className="flex items-center gap-6">
-          <Link to="/" className="hover:text-orange-500">
-            Home
+        {/* Links */}
+        <div className="flex items-center gap-6 text-sm font-medium">
+          <Link to="/">Home</Link>
+
+          <Link to="/cart">
+            Cart ({cartItems.length})
           </Link>
 
-          <Link to="/cart" className="hover:text-orange-500">
-            Cart ({cartCount})
-          </Link>
-
-          {/* NOT LOGGED IN */}
+          {/* USER AUTH */}
           {!user && (
             <>
-              <Link to="/login" className="hover:text-orange-500">
-                Login
-              </Link>
+              <Link to="/login">Login</Link>
               <Link
                 to="/signup"
-                className="bg-black text-white px-4 py-1 rounded"
+                className="bg-green-600 text-white px-3 py-1 rounded"
               >
                 Signup
               </Link>
             </>
           )}
 
-          {/* LOGGED IN */}
           {user && (
             <>
-              {user.isAdmin && (
-                <Link
-                  to="/admin/dashboard"
-                  className="font-semibold text-blue-600"
-                >
-                  Admin
-                </Link>
-              )}
-
+              <Link to="/my-orders">My Orders</Link>
               <button
-                onClick={handleLogout}
-                className="text-red-500 hover:underline"
+                onClick={logout}
+                className="text-red-600"
               >
                 Logout
               </button>
             </>
           )}
-        </nav>
+
+          {/* 🔐 ADMIN ENTRY (ALWAYS VISIBLE) */}
+          <Link
+            to="/admin/login"
+            className="border px-3 py-1 rounded hover:bg-gray-100"
+          >
+            Admin
+          </Link>
+        </div>
       </div>
-    </header>
+    </nav>
   );
 };
 

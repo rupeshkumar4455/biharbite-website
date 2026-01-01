@@ -1,71 +1,109 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { API_BASE } from "../utils/api";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { login } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
+
+  const [identifier, setIdentifier] = useState(""); // email OR admin id
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // 🔁 Already logged in
+  useEffect(() => {
+    if (user) {
+      if (user.isAdmin) {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/");
+      }
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     try {
-      const res = await fetch(
-        "http://localhost:5000/api/auth/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+      setLoading(true);
+
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: identifier,
+          password,
+        }),
+      });
 
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message || "Login failed");
+        setError(data.message || "Login failed");
         return;
       }
 
-      login(data); // save user + token
-      navigate("/");
-    } catch {
-      alert("Server error");
+      login(data);
+
+      // 🔥 ROLE BASED REDIRECT
+      if (data.isAdmin) {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/");
+      }
+    } catch (err) {
+      setError("Backend not reachable");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center">
+    <div className="min-h-[80vh] flex items-center justify-center">
       <form
         onSubmit={handleSubmit}
-        className="border p-6 w-full max-w-md"
+        className="border p-6 w-full max-w-md bg-white"
       >
-        <h2 className="text-2xl font-semibold mb-4">
+        <h2 className="text-xl font-semibold mb-4 text-center">
           Login
         </h2>
 
+        {error && (
+          <p className="text-red-600 text-sm mb-2">{error}</p>
+        )}
+
         <input
-          type="email"
-          placeholder="Email"
-          className="w-full border p-2 mb-3"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
+          type="text"
+          placeholder="Email (User) or Admin ID"
+          className="border p-2 w-full mb-3"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
         />
 
         <input
           type="password"
           placeholder="Password"
-          className="w-full border p-2 mb-4"
+          className="border p-2 w-full mb-4"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
         />
 
-        <button className="w-full bg-black text-white py-2">
-          Login
+        <button
+          disabled={loading}
+          className="bg-black text-white w-full py-2"
+        >
+          {loading ? "Logging in..." : "Login"}
         </button>
+
+        <p className="text-sm text-center mt-3">
+          New user?{" "}
+          <Link to="/signup" className="text-blue-600">
+            Signup
+          </Link>
+        </p>
       </form>
     </div>
   );

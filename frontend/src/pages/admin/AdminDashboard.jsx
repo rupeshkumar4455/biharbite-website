@@ -1,79 +1,79 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { API_BASE } from "../../utils/api";
+import { useNavigate } from "react-router-dom";
 
-const AdminDashboard = () => {
+export default function AdminDashboard() {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
 
-  const fetchOrders = async () => {
-    const res = await fetch("http://localhost:5000/api/orders", {
+  useEffect(() => {
+    if (!user?.token) return;
+    fetch(`${API_BASE}/api/orders`, {
       headers: {
         Authorization: `Bearer ${user.token}`,
       },
-    });
-    const data = await res.json();
-    setOrders(data);
-  };
+    })
+      .then((res) => res.json())
+      .then(setOrders);
+  }, []);
 
-  useEffect(() => {
-    if (user?.token) {
-      fetchOrders();
-    }
-  }, [user]);
 
-  const updateStatus = async (id, status) => {
-    await fetch(`http://localhost:5000/api/orders/${id}`, {
+const navigate = useNavigate();
+
+useEffect(() => {
+  if (!user || !user.isAdmin) {
+    navigate("/admin/login");
+  }
+}, [user, navigate]);
+
+
+  const updateStatus = (id, status) => {
+    fetch(`${API_BASE}/api/orders/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${user.token}`,
       },
-      body: JSON.stringify({ status }),
-    });
-    fetchOrders();
+      body: JSON.stringify({ orderStatus: status }),
+    })
+      .then((res) => res.json())
+      .then(() => {
+        setOrders((prev) =>
+          prev.map((o) =>
+            o._id === id ? { ...o, orderStatus: status } : o
+          )
+        );
+      });
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
-      <h2 className="text-2xl font-semibold mb-6">
-        Admin Dashboard
-      </h2>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
 
-      <table className="w-full border text-sm">
+      <table className="w-full border">
         <thead className="bg-gray-100">
           <tr>
-            <th className="p-3">Order ID</th>
             <th>User</th>
-            <th>Items</th>
             <th>Total</th>
             <th>Status</th>
             <th>Action</th>
           </tr>
         </thead>
-
         <tbody>
           {orders.map((o) => (
-            <tr key={o._id} className="border-t align-top">
-              <td className="p-3">{o._id}</td>
-              <td>{o.user?.email}</td>
-              <td>
-                {o.items.map((i, idx) => (
-                  <div key={idx}>
-                    {i.name} × {i.qty}
-                  </div>
-                ))}
-              </td>
+            <tr key={o._id} className="border-t">
+              <td>{o.user?.name}</td>
               <td>₹{o.totalAmount}</td>
-              <td>{o.status}</td>
+              <td>{o.orderStatus}</td>
               <td>
                 <select
-                  value={o.status}
+                  value={o.orderStatus}
                   onChange={(e) =>
                     updateStatus(o._id, e.target.value)
                   }
-                  className="border p-1"
                 >
-                  <option>Pending</option>
+                  <option>Placed</option>
                   <option>Paid</option>
                   <option>Delivered</option>
                 </select>
@@ -84,6 +84,4 @@ const AdminDashboard = () => {
       </table>
     </div>
   );
-};
-
-export default AdminDashboard;
+}

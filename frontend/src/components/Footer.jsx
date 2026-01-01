@@ -68,7 +68,7 @@ const Footer = () => {
           <h3 className="text-white font-semibold mb-4">Contact Us</h3>
           <ul className="space-y-2 text-sm">
             <li>📍 Bihar, India</li>
-            <li>📞 +91 XXXXX XXXXX</li>
+            <li>📞 +91 6268947041</li>
             <li>✉️ support@biharbite.com</li>
           </ul>
         </div>

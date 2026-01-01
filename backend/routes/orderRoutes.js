@@ -1,94 +1,46 @@
 import express from "express";
 import Order from "../models/Order.js";
-import { protect, admin } from "../middleware/authMiddleware.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-/*
-========================================
-POST /api/orders
-Create new order (USER)
-========================================
-*/
+/* USER: CREATE ORDER */
 router.post("/", protect, async (req, res) => {
-  try {
-    const { items, totalAmount, paymentMethod, status } = req.body;
+  const { items, totalAmount, paymentMethod } = req.body;
 
-    if (!items || items.length === 0) {
-      return res.status(400).json({ message: "No order items" });
-    }
+  const order = await Order.create({
+    user: req.user._id,
+    items,
+    totalAmount,
+    paymentMethod,
+  });
 
-    const order = new Order({
-      user: req.user._id,
-      items,
-      totalAmount,
-      paymentMethod,
-      status: status || "Pending",
-    });
-
-    const createdOrder = await order.save();
-    res.status(201).json(createdOrder);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  res.status(201).json(order);
 });
 
-/*
-========================================
-GET /api/orders/my
-Get logged-in user's orders
-========================================
-*/
+/* USER: MY ORDERS */
 router.get("/my", protect, async (req, res) => {
-  try {
-    const orders = await Order.find({ user: req.user._id }).sort({
-      createdAt: -1,
-    });
-    res.json(orders);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  const orders = await Order.find({ user: req.user._id });
+  res.json(orders);
 });
 
-/*
-========================================
-GET /api/orders
-Get all orders (ADMIN)
-========================================
-*/
-router.get("/", protect, admin, async (req, res) => {
-  try {
-    const orders = await Order.find({})
-      .populate("user", "name email")
-      .sort({ createdAt: -1 });
-
-    res.json(orders);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+/* ADMIN: ALL ORDERS */
+router.get("/", protect, adminOnly, async (req, res) => {
+  const orders = await Order.find().populate("user", "name email");
+  res.json(orders);
 });
 
-/*
-========================================
-PUT /api/orders/:id
-Update order status (ADMIN)
-========================================
-*/
-router.put("/:id", protect, admin, async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id);
+/* ADMIN: UPDATE STATUS */
+router.put("/:id", protect, adminOnly, async (req, res) => {
+  const order = await Order.findById(req.params.id);
 
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
+  if (!order) return res.status(404).json({ message: "Order not found" });
 
-    order.status = req.body.status || order.status;
-    const updatedOrder = await order.save();
+  order.orderStatus = req.body.orderStatus || order.orderStatus;
+  order.paymentStatus = req.body.paymentStatus || order.paymentStatus;
 
-    res.json(updatedOrder);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  const updated = await order.save();
+  res.json(updated);
 });
 
 export default router;

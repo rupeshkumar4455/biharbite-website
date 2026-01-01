@@ -12,6 +12,10 @@ import Checkout from "./pages/Checkout";
 
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminProducts from "./pages/admin/AdminProducts";
+
+ 
+
 
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
@@ -33,10 +37,15 @@ const App = () => {
               <Route path="/signup" element={<Signup />} />
               <Route path="/my-orders" element={<MyOrders />} />
               <Route path="/checkout" element={<Checkout />} />
+              <Route path="/my-orders" element={<MyOrders />} />
+
 
 
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/products" element={<AdminProducts />} />
+   
+
             </Routes>
 
             <Footer />

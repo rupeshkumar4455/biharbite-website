@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-const protect = async (req, res, next) => {
+export const protect = async (req, res, next) => {
   let token;
 
   if (
@@ -10,25 +10,28 @@ const protect = async (req, res, next) => {
   ) {
     try {
       token = req.headers.authorization.split(" ")[1];
+
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      if (decoded.id === "admin") {
+        req.user = { _id: "admin", isAdmin: true };
+        return next();
+      }
+
       req.user = await User.findById(decoded.id).select("-password");
       next();
-    } catch {
+    } catch (err) {
       return res.status(401).json({ message: "Not authorized" });
     }
-  }
-
-  if (!token) {
+  } else {
     return res.status(401).json({ message: "No token" });
   }
 };
 
-const admin = (req, res, next) => {
+export const adminOnly = (req, res, next) => {
   if (req.user && req.user.isAdmin) {
     next();
   } else {
     res.status(403).json({ message: "Admin only" });
   }
 };
-
-export { protect, admin };
