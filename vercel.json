@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://biharbite-backend.onrender.com/api/:path*"
+    }
+  ]
+}
