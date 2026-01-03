@@ -1,9 +1,7 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
-/* ✅ Context */
 export const CartContext = createContext(null);
 
-/* ✅ Custom Hook (for files using useCart) */
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
@@ -12,26 +10,33 @@ export const useCart = () => {
   return context;
 };
 
-/* ✅ Provider */
 const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState(() => {
+  const [cart, setCart] = useState([]);
+
+  // ✅ Load cart safely
+  useEffect(() => {
     try {
-      return JSON.parse(localStorage.getItem("cart")) || [];
+      const saved = JSON.parse(localStorage.getItem("cart"));
+      if (Array.isArray(saved)) {
+        setCart(saved);
+      } else {
+        localStorage.removeItem("cart");
+      }
     } catch {
-      return [];
+      localStorage.removeItem("cart");
     }
-  });
+  }, []);
 
   const addToCart = (product) => {
-    const updatedCart = [...cart, product];
-    setCart(updatedCart);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    const updated = [...cart, { ...product, qty: 1 }];
+    setCart(updated);
+    localStorage.setItem("cart", JSON.stringify(updated));
   };
 
   const removeFromCart = (id) => {
-    const updatedCart = cart.filter((item) => item._id !== id);
-    setCart(updatedCart);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    const updated = cart.filter((item) => item._id !== id);
+    setCart(updated);
+    localStorage.setItem("cart", JSON.stringify(updated));
   };
 
   const clearCart = () => {
