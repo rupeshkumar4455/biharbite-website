@@ -1,5 +1,8 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 
+/* ===============================
+   CONTEXT
+   =============================== */
 export const CartContext = createContext(null);
 
 export const useCart = () => {
@@ -10,35 +13,65 @@ export const useCart = () => {
   return context;
 };
 
+/* ===============================
+   PROVIDER
+   =============================== */
 const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
-
-  // ✅ Load cart safely
-  useEffect(() => {
+  const [cart, setCart] = useState(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem("cart"));
-      if (Array.isArray(saved)) {
-        setCart(saved);
-      } else {
-        localStorage.removeItem("cart");
-      }
+      return JSON.parse(localStorage.getItem("cart")) || [];
     } catch {
-      localStorage.removeItem("cart");
+      return [];
     }
-  }, []);
+  });
 
+  /* ADD TO CART */
   const addToCart = (product) => {
-    const updated = [...cart, { ...product, qty: 1 }];
-    setCart(updated);
-    localStorage.setItem("cart", JSON.stringify(updated));
+    const exist = cart.find((item) => item._id === product._id);
+
+    let updatedCart;
+    if (exist) {
+      updatedCart = cart.map((item) =>
+        item._id === product._id
+          ? { ...item, qty: item.qty + 1 }
+          : item
+      );
+    } else {
+      updatedCart = [...cart, { ...product, qty: 1 }];
+    }
+
+    setCart(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
   };
 
+  /* INCREASE QTY */
+  const increaseQty = (id) => {
+    const updatedCart = cart.map((item) =>
+      item._id === id ? { ...item, qty: item.qty + 1 } : item
+    );
+    setCart(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+  };
+
+  /* DECREASE QTY */
+  const decreaseQty = (id) => {
+    const updatedCart = cart.map((item) =>
+      item._id === id && item.qty > 1
+        ? { ...item, qty: item.qty - 1 }
+        : item
+    );
+    setCart(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+  };
+
+  /* REMOVE ITEM */
   const removeFromCart = (id) => {
-    const updated = cart.filter((item) => item._id !== id);
-    setCart(updated);
-    localStorage.setItem("cart", JSON.stringify(updated));
+    const updatedCart = cart.filter((item) => item._id !== id);
+    setCart(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
   };
 
+  /* CLEAR CART */
   const clearCart = () => {
     setCart([]);
     localStorage.removeItem("cart");
@@ -46,7 +79,14 @@ const CartProvider = ({ children }) => {
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, clearCart }}
+      value={{
+        cart,
+        addToCart,
+        increaseQty,
+        decreaseQty,
+        removeFromCart,
+        clearCart,
+      }}
     >
       {children}
     </CartContext.Provider>
