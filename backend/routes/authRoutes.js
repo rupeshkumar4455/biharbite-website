@@ -5,12 +5,9 @@ import User from "../models/User.js";
 
 const router = express.Router();
 
-/* ===============================
-   TOKEN GENERATOR
-   =============================== */
-const generateToken = (id, isAdmin = false) => {
+const generateToken = (id) => {
   return jwt.sign(
-    { id, isAdmin },
+    { id, isAdmin: false },
     process.env.JWT_SECRET,
     { expiresIn: "30d" }
   );
@@ -25,17 +22,13 @@ router.post("/register", async (req, res) => {
 
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res
-        .status(400)
-        .json({ message: "User already exists" });
+      return res.status(400).json({ message: "User already exists" });
     }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
       email,
-      password: hashedPassword,
+      password, // 🔐 auto-hashed by model
       isAdmin: false,
     });
 
@@ -43,8 +36,7 @@ router.post("/register", async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      isAdmin: user.isAdmin,
-      token: generateToken(user._id, user.isAdmin),
+      token: generateToken(user._id),
     });
   } catch (error) {
     console.error("REGISTER ERROR:", error);
@@ -53,44 +45,42 @@ router.post("/register", async (req, res) => {
 });
 
 /* ===============================
-   LOGIN (USER + ADMIN)
+   LOGIN (USER)
    =============================== */
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    /* 🔐 ADMIN LOGIN */
-    if (email === "admin" && password === "admin123") {
-      return res.json({
-        _id: "admin",
-        name: "Admin",
-        email: "admin",
-        isAdmin: true,
-        token: generateToken("admin", true),
-      });
-    }
-
-    /* 👤 USER LOGIN */
     const user = await User.findOne({ email });
     if (!user) {
-      return res
-        .status(401)
-        .json({ message: "Invalid email or password" });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    let isMatch = false;
+
+    // 🔐 CASE 1: hashed password
+    if (user.password.startsWith("$2")) {
+      isMatch = await bcrypt.compare(password, user.password);
+    } 
+    // ⚠️ CASE 2: old plain-text password (AUTO FIX)
+    else {
+      isMatch = password === user.password;
+
+      if (isMatch) {
+        user.password = password; // will auto-hash on save
+        await user.save();
+      }
+    }
+
     if (!isMatch) {
-      return res
-        .status(401)
-        .json({ message: "Invalid email or password" });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
-      isAdmin: user.isAdmin,
-      token: generateToken(user._id, user.isAdmin),
+      token: generateToken(user._id),
     });
   } catch (error) {
     console.error("LOGIN ERROR:", error);
@@ -98,7 +88,4 @@ router.post("/login", async (req, res) => {
   }
 });
 
-/* ===============================
-   👇 THIS LINE FIXES YOUR ERROR
-   =============================== */
 export default router;

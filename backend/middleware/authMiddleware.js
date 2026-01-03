@@ -1,7 +1,10 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-export const protect = async (req, res, next) => {
+/* ===============================
+   🔐 PROTECT (USER + ADMIN)
+   =============================== */
+const protect = async (req, res, next) => {
   let token;
 
   if (
@@ -13,25 +16,41 @@ export const protect = async (req, res, next) => {
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+      // 🔑 ADMIN TOKEN
       if (decoded.id === "admin") {
         req.user = { _id: "admin", isAdmin: true };
         return next();
       }
 
-      req.user = await User.findById(decoded.id).select("-password");
+      // 👤 USER TOKEN
+      const user = await User.findById(decoded.id).select("-password");
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      req.user = user;
       next();
     } catch (err) {
-      return res.status(401).json({ message: "Not authorized" });
+      return res.status(401).json({ message: "Not authorized, token failed" });
     }
   } else {
-    return res.status(401).json({ message: "No token" });
+    return res.status(401).json({ message: "Not authorized, no token" });
   }
 };
 
-export const adminOnly = (req, res, next) => {
+/* ===============================
+   🔒 ADMIN ONLY
+   =============================== */
+const adminOnly = (req, res, next) => {
   if (req.user && req.user.isAdmin) {
     next();
   } else {
     res.status(403).json({ message: "Admin only" });
   }
 };
+
+/* ===============================
+   ✅ EXPORTS (FINAL FIX)
+   =============================== */
+export default protect;
+export { protect, adminOnly };

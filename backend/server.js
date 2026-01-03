@@ -13,15 +13,23 @@ dotenv.config();
 const app = express();
 
 /* ===============================
-   🌐 CORS (FINAL & PERMANENT FIX)
+   🌐 CORS (FINAL BULLETPROOF FIX)
    =============================== */
 app.use(
   cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: [
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+      "https://localhost:5173",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
 
+// 🔥 IMPORTANT: handle preflight explicitly
+app.options("*", cors());
 
 /* ===============================
    MIDDLEWARE
@@ -36,14 +44,14 @@ app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 
 /* ===============================
-   ROOT TEST ROUTE
+   ROOT TEST
    =============================== */
 app.get("/", (req, res) => {
-  res.send("🚀 BiharBite Backend Running");
+  res.status(200).send("🚀 BiharBite Backend Running");
 });
 
 /* ===============================
-   DATABASE + SERVER START
+   DATABASE + SERVER
    =============================== */
 const PORT = process.env.PORT || 5000;
 
@@ -56,5 +64,5 @@ mongoose
     });
   })
   .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
+    console.error("❌ MongoDB error:", err);
   });
