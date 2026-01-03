@@ -13,22 +13,35 @@ dotenv.config();
 const app = express();
 
 /* ===============================
-   🌐 CORS (FINAL BULLETPROOF FIX)
+   🌐 CORS – FINAL PRODUCTION FIX
    =============================== */
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://biharbite-website.vercel.app",
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "http://127.0.0.1:5173",
-      "https://localhost:5173",
-    ],
+    origin: function (origin, callback) {
+      // allow requests with no origin (Postman, curl)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(
+          new Error("Not allowed by CORS")
+        );
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
 
-// 🔥 IMPORTANT: handle preflight explicitly
+// 🔥 VERY IMPORTANT (preflight support)
 app.options("*", cors());
 
 /* ===============================
@@ -44,14 +57,14 @@ app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 
 /* ===============================
-   ROOT TEST
+   ROOT TEST ROUTE
    =============================== */
 app.get("/", (req, res) => {
-  res.status(200).send("🚀 BiharBite Backend Running");
+  res.send("🚀 BiharBite Backend Running");
 });
 
 /* ===============================
-   DATABASE + SERVER
+   DATABASE + SERVER START
    =============================== */
 const PORT = process.env.PORT || 5000;
 
@@ -64,5 +77,5 @@ mongoose
     });
   })
   .catch((err) => {
-    console.error("❌ MongoDB error:", err);
+    console.error("❌ MongoDB connection error:", err);
   });
