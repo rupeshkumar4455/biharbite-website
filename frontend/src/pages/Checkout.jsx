@@ -1,32 +1,38 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { API_BASE } from "../utils/api";
+
+const UPI_ID = "6268947041@ibl"; // 👈 apna real UPI ID yaha daalo
+const MERCHANT_NAME = "BiharBite";
 
 const Checkout = () => {
   const { cartItems, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [paymentMethod, setPaymentMethod] = useState("UPI");
-  const [placing, setPlacing] = useState(false);
-  const [error, setError] = useState("");
+  const [showUPI, setShowUPI] = useState(false);
 
   const totalAmount = cartItems.reduce(
     (sum, item) => sum + item.price * item.qty,
     0
   );
 
-  const placeOrder = async () => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
+  if (!user) {
+    navigate("/login");
+    return null;
+  }
 
-    setPlacing(true);
-    setError("");
+  // 🔥 Dynamic UPI deep link
+  const upiLink = `upi://pay?pa=${UPI_ID}&pn=${MERCHANT_NAME}&am=${totalAmount}&cu=INR&tn=Order from BiharBite`;
 
+  // 🔥 Dynamic QR URL (NO IMAGE FILE, AUTO GENERATED)
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
+    upiLink
+  )}`;
+
+  const placeOrder = async (paymentMethod) => {
     try {
       const res = await fetch(`${API_BASE}/api/orders`, {
         method: "POST",
@@ -35,118 +41,84 @@ const Checkout = () => {
           Authorization: `Bearer ${user.token}`,
         },
         body: JSON.stringify({
-          items: cartItems.map((i) => ({
-            name: i.name,
-            qty: i.qty,
-            price: i.price,
-          })),
+          items: cartItems,
           totalAmount,
           paymentMethod,
         }),
       });
 
-      if (!res.ok) {
-        setError("Order failed. Try again.");
-        setPlacing(false);
-        return;
-      }
+      if (!res.ok) throw new Error("Order failed");
 
       clearCart();
       navigate("/my-orders");
-    } catch {
-      setError("Backend not reachable");
-    } finally {
-      setPlacing(false);
+    } catch (err) {
+      alert("Order failed");
     }
   };
 
-  if (cartItems.length === 0) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        Cart is empty
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      <h2 className="text-2xl font-semibold mb-6">
-        Checkout
-      </h2>
+    <div className="max-w-3xl mx-auto p-6">
+      <h2 className="text-2xl mb-6">Checkout</h2>
 
       {/* ORDER SUMMARY */}
-      <div className="border rounded p-4 mb-6">
-        <h3 className="font-semibold mb-3">Order Summary</h3>
-
+      <div className="mb-6">
         {cartItems.map((item) => (
-          <div
-            key={item.id}
-            className="flex justify-between text-sm mb-2"
-          >
+          <div key={item.id} className="flex justify-between mb-2">
             <span>
               {item.name} × {item.qty}
             </span>
-            <span>
-              ₹{item.price * item.qty}
-            </span>
+            <span>₹{item.price * item.qty}</span>
           </div>
         ))}
-
-        <div className="border-t mt-3 pt-3 font-semibold flex justify-between">
+        <hr />
+        <div className="flex justify-between font-bold mt-2">
           <span>Total</span>
           <span>₹{totalAmount}</span>
         </div>
       </div>
 
-      {/* PAYMENT METHOD */}
-      <div className="border rounded p-4 mb-6">
-        <h3 className="font-semibold mb-3">Payment Method</h3>
+      {/* PAYMENT OPTIONS */}
+      <div className="space-y-4">
+        <button
+          className="btn-primary w-full"
+          onClick={() => setShowUPI(true)}
+        >
+          Pay via UPI
+        </button>
 
-        <label className="flex items-center gap-2 mb-3">
-          <input
-            type="radio"
-            checked
-            readOnly
-          />
-          <span>UPI (PhonePe / GPay / Paytm)</span>
-        </label>
-
-        {/* UPI DETAILS */}
-        <div className="bg-gray-50 p-4 rounded text-center">
-          <p className="mb-2 font-medium">
-            Pay using UPI
-          </p>
-
-          <img
-            src="/images/upi-qr.png"
-            alt="UPI QR"
-            className="w-40 mx-auto mb-2"
-          />
-
-          <p className="text-sm">
-            UPI ID: <b>6268947041@ibl</b>
-          </p>
-
-          <p className="text-xs text-gray-500 mt-2">
-            Scan QR or pay using UPI ID, then place order
-          </p>
-        </div>
+        <button
+          className="btn-secondary w-full"
+          onClick={() => placeOrder("COD")}
+        >
+          Cash on Delivery
+        </button>
       </div>
 
-      {/* PLACE ORDER */}
-      {error && (
-        <p className="text-red-600 mb-3">
-          {error}
-        </p>
-      )}
+      {/* 🔥 DYNAMIC UPI QR */}
+      {showUPI && (
+        <div className="mt-8 text-center">
+          <h3 className="text-lg mb-3">
+            Scan & Pay ₹{totalAmount}
+          </h3>
 
-      <button
-        onClick={placeOrder}
-        disabled={placing}
-        className="w-full bg-green-600 text-white py-3 rounded text-lg hover:bg-green-700 disabled:opacity-60"
-      >
-        {placing ? "Placing Order..." : "Place Order"}
-      </button>
+          <img
+            src={qrUrl}
+            alt="UPI QR Code"
+            className="mx-auto border p-2 bg-white"
+          />
+
+          <p className="mt-3 text-sm text-gray-600">
+            UPI ID: <b>{UPI_ID}</b>
+          </p>
+
+          <button
+            className="btn-primary mt-4"
+            onClick={() => placeOrder("UPI")}
+          >
+            Payment Done → Place Order
+          </button>
+        </div>
+      )}
     </div>
   );
 };
