@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { useAuth } from "../context/AuthContext";
-import { API_BASE } from "../utils/api";
 
 const Login = () => {
-  const { login } = useAuth();
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,55 +15,40 @@ const Login = () => {
     e.preventDefault();
     setError("");
 
+    console.log("API URL =", import.meta.env.VITE_API_URL);
+
     try {
-      const res = await fetch(`${API_BASE}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        { email, password }
+      );
+
+      login({
+        _id: res.data._id,
+        name: res.data.name,
+        email: res.data.email,
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message || "Login failed");
-        return;
-      }
-
-      // ✅ SAVE USER
-      login(data);
-
-      // ✅ REDIRECT USER
+      localStorage.setItem("token", res.data.token);
       navigate("/");
     } catch (err) {
-      console.error(err);
-      setError("Backend not reachable");
+      console.error("LOGIN ERROR:", err.response?.data);
+      setError(err.response?.data?.message || "Login failed");
     }
   };
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center">
-      <form
-        onSubmit={submitHandler}
-        className="w-full max-w-sm border p-6 rounded"
-      >
-        <h2 className="text-xl font-semibold mb-4 text-center">
-          User Login
-        </h2>
+    <div className="max-w-md mx-auto mt-20">
+      <h2 className="text-xl font-bold mb-4">User Login</h2>
 
-        {error && (
-          <p className="text-red-600 text-sm mb-3">
-            {error}
-          </p>
-        )}
+      {error && <p className="text-red-600 mb-2">{error}</p>}
 
+      <form onSubmit={submitHandler} className="flex flex-col gap-3">
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border p-2 mb-3"
           required
         />
 
@@ -72,14 +57,10 @@ const Login = () => {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border p-2 mb-4"
           required
         />
 
-        <button
-          type="submit"
-          className="w-full bg-green-600 text-white py-2"
-        >
+        <button className="bg-red-600 text-white py-2">
           Login
         </button>
       </form>

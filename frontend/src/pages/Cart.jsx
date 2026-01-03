@@ -1,68 +1,72 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 
 const Cart = () => {
-  const { cartItems } = useCart();
+  const { cart, removeFromCart } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-  const total = cartItems.reduce(
-    (sum, item) => sum + item.price * item.qty,
+  // 🔐 User not logged in → login page
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    }
+  }, [user, navigate]);
+
+  const totalAmount = cart.reduce(
+    (sum, item) => sum + Number(item.price),
     0
   );
 
-  if (cartItems.length === 0) {
+  if (cart.length === 0) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center">
-        <h2 className="text-2xl font-semibold mb-2">
+      <div className="max-w-4xl mx-auto mt-20 text-center">
+        <h2 className="text-2xl font-bold mb-4">
           Your cart is empty
         </h2>
-        <Link
-          to="/"
-          className="bg-black text-white px-6 py-2 rounded"
-        >
-          Shop Now
+        <Link to="/" className="text-red-600 underline">
+          Go shopping
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10 min-h-[70vh]">
-      <h2 className="text-2xl font-semibold mb-6">
-        Your Cart
-      </h2>
+    <div className="max-w-4xl mx-auto mt-10 px-4">
+      <h2 className="text-2xl font-bold mb-6">Your Cart</h2>
 
-      <table className="w-full border mb-6">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="p-3 text-left">Product</th>
-            <th>Qty</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {cartItems.map((item) => (
-            <tr key={item.id} className="border-t text-center">
-              <td className="p-3 text-left">
-                {item.name}
-              </td>
-              <td>{item.qty}</td>
-              <td>₹{item.price * item.qty}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {cart.map((item, index) => (
+        <div
+          key={item._id || index}
+          className="flex justify-between items-center border p-4 mb-3 rounded"
+        >
+          <div>
+            <h3 className="font-semibold">{item.name}</h3>
+            <p className="text-gray-600">₹{item.price}</p>
+          </div>
 
-      <div className="flex justify-between items-center">
-        <h3 className="text-xl font-semibold">
-          Total: ₹{total}
+          <button
+            onClick={() => removeFromCart(item._id)}
+            className="text-red-600"
+          >
+            Remove
+          </button>
+        </div>
+      ))}
+
+      <div className="mt-6 flex justify-between items-center">
+        <h3 className="text-xl font-bold">
+          Total: ₹{totalAmount}
         </h3>
 
-        <Link
-          to="/checkout"
-          className="bg-black text-white px-6 py-2 rounded"
+        <button
+          onClick={() => navigate("/checkout")}
+          className="bg-red-600 text-white px-6 py-2 rounded"
         >
           Proceed to Checkout
-        </Link>
+        </button>
       </div>
     </div>
   );

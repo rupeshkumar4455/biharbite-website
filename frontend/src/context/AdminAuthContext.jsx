@@ -5,10 +5,8 @@ const AdminAuthContext = createContext();
 export const AdminAuthProvider = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // 🔑 restore admin state on app load
   useEffect(() => {
-    const stored = localStorage.getItem("isAdmin");
-    if (stored === "true") {
+    if (localStorage.getItem("isAdmin") === "true") {
       setIsAdmin(true);
     }
   }, []);
@@ -24,9 +22,7 @@ export const AdminAuthProvider = ({ children }) => {
   };
 
   return (
-    <AdminAuthContext.Provider
-      value={{ isAdmin, loginAdmin, logoutAdmin }}
-    >
+    <AdminAuthContext.Provider value={{ isAdmin, loginAdmin, logoutAdmin }}>
       {children}
     </AdminAuthContext.Provider>
   );

@@ -1,92 +1,47 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { API_BASE } from "../../utils/api";
-import { useAuth } from "../../context/AuthContext";
+import { useAdminAuth } from "../../context/AdminAuthContext";
 
 const AdminLogin = () => {
+  const { loginAdmin } = useAdminAuth();
   const navigate = useNavigate();
-  const { login } = useAuth();
 
-  const [adminId, setAdminId] = useState("");
+  const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const submitHandler = async (e) => {
+  const submitHandler = (e) => {
     e.preventDefault();
     setError("");
 
-    try {
-      const res = await fetch(`${API_BASE}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: adminId,   // 👈 admin
-          password,         // 👈 admin123
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message || "Server error");
-        return;
-      }
-
-      if (!data.isAdmin) {
-        setError("Not authorized as admin");
-        return;
-      }
-
-      // ✅ SAVE ADMIN SESSION
-      login(data);
-
-      // ✅ GO TO DASHBOARD
+    if (id === "admin" && password === "admin123") {
+      loginAdmin();
       navigate("/admin/dashboard");
-    } catch (err) {
-      console.error("ADMIN LOGIN ERROR:", err);
-      setError("Backend not reachable");
+    } else {
+      setError("Invalid admin credentials");
     }
   };
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center">
-      <form
-        onSubmit={submitHandler}
-        className="w-full max-w-sm border p-6 rounded"
-      >
-        <h2 className="text-xl font-semibold mb-4 text-center">
-          Admin Login
-        </h2>
+    <div className="max-w-md mx-auto mt-20">
+      <h2 className="text-xl font-bold mb-4">Admin Login</h2>
 
-        {error && (
-          <p className="text-red-600 text-sm mb-3">
-            {error}
-          </p>
-        )}
+      {error && <p className="text-red-600">{error}</p>}
 
+      <form onSubmit={submitHandler} className="flex flex-col gap-3">
         <input
-          type="text"
           placeholder="Admin ID"
-          value={adminId}
-          onChange={(e) => setAdminId(e.target.value)}
-          className="w-full border p-2 mb-3"
+          value={id}
+          onChange={(e) => setId(e.target.value)}
         />
-
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border p-2 mb-4"
         />
-
-        <button
-          type="submit"
-          className="w-full bg-black text-white py-2"
-        >
-          Login as Admin
+        <button className="bg-black text-white py-2">
+          Login
         </button>
       </form>
     </div>

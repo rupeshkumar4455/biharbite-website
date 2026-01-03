@@ -1,81 +1,73 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { API_BASE } from "../../utils/api";
+import { useAdminAuth } from "../../context/AdminAuthContext";
 
 const AdminDashboard = () => {
   const [orders, setOrders] = useState([]);
+  const { isAdmin } = useAdminAuth();
+  const navigate = useNavigate();
 
-  const fetchOrders = async () => {
-    const res = await fetch(`${API_BASE}/api/orders`);
-    const data = await res.json();
-    setOrders(data);
-  };
-
-  const updateStatus = async (id, status) => {
-    await fetch(`${API_BASE}/api/orders/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    fetchOrders();
-  };
-
-  const deleteOrder = async (id) => {
-    if (!window.confirm("Delete this order?")) return;
-    await fetch(`${API_BASE}/api/orders/${id}`, {
-      method: "DELETE",
-    });
-    fetchOrders();
-  };
+  // 🔒 HARD PROTECTION
+  useEffect(() => {
+    if (!isAdmin) {
+      navigate("/admin/login");
+    }
+  }, [isAdmin, navigate]);
 
   useEffect(() => {
+    if (!isAdmin) return; // ⛔ stop API call
+
+    const fetchOrders = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const res = await fetch(`${API_BASE}/api/orders`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) throw new Error("Fetch failed");
+
+        const data = await res.json();
+        setOrders(data);
+      } catch (err) {
+        console.error("ADMIN FETCH ORDERS ERROR:", err.message);
+      }
+    };
+
     fetchOrders();
-  }, []);
+  }, [isAdmin]);
 
   return (
     <div className="p-6">
       <h2 className="text-2xl mb-6">Admin Dashboard</h2>
 
-      <table className="w-full border">
-        <thead className="bg-gray-100">
-          <tr>
-            <th>User</th>
-            <th>Total</th>
-            <th>Payment</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {orders.map((o) => (
-            <tr key={o._id} className="border-t text-center">
-              <td>{o.user?.email}</td>
-              <td>₹{o.totalAmount}</td>
-              <td>{o.paymentMethod}</td>
-              <td>
-                <select
-                  value={o.status}
-                  onChange={(e) =>
-                    updateStatus(o._id, e.target.value)
-                  }
-                >
-                  <option>Pending</option>
-                  <option>Paid</option>
-                  <option>Delivered</option>
-                </select>
-              </td>
-              <td>
-                <button
-                  className="text-red-600"
-                  onClick={() => deleteOrder(o._id)}
-                >
-                  Delete
-                </button>
-              </td>
+      {orders.length === 0 ? (
+        <p>No orders found</p>
+      ) : (
+        <table className="w-full border">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Total</th>
+              <th>Payment</th>
+              <th>Status</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {orders.map((o) => (
+              <tr key={o._id}>
+                <td>{o.user?.email}</td>
+                <td>₹{o.totalAmount}</td>
+                <td>{o.paymentMethod}</td>
+                <td>{o.orderStatus}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };
