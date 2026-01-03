@@ -1,103 +1,76 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 import { API_BASE } from "../../utils/api";
 
 const AdminDashboard = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-
   const [orders, setOrders] = useState([]);
 
-  // 🔐 Admin protection
-  useEffect(() => {
-    if (!user || !user.isAdmin) {
-      navigate("/admin/login");
-    }
-  }, [user, navigate]);
-
-  // 📦 Fetch all orders
-  useEffect(() => {
-    const fetchOrders = async () => {
-      const res = await fetch(`${API_BASE}/api/orders`, {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      });
-      const data = await res.json();
-      setOrders(data);
-    };
-
-    if (user?.token) fetchOrders();
-  }, [user]);
-
-  const updateStatus = async (orderId, newStatus) => {
-    await fetch(`${API_BASE}/api/orders/${orderId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${user.token}`,
-      },
-      body: JSON.stringify({
-        orderStatus: newStatus,
-        paymentStatus:
-          newStatus === "Paid" || newStatus === "Delivered"
-            ? "Paid"
-            : "Pending",
-      }),
-    });
-
-    setOrders((prev) =>
-      prev.map((o) =>
-        o._id === orderId
-          ? { ...o, orderStatus: newStatus }
-          : o
-      )
-    );
+  const fetchOrders = async () => {
+    const res = await fetch(`${API_BASE}/api/orders`);
+    const data = await res.json();
+    setOrders(data);
   };
 
-  return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">
-        Admin Dashboard – Orders
-      </h1>
+  const updateStatus = async (id, status) => {
+    await fetch(`${API_BASE}/api/orders/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    fetchOrders();
+  };
 
-      <table className="w-full border text-sm">
+  const deleteOrder = async (id) => {
+    if (!window.confirm("Delete this order?")) return;
+    await fetch(`${API_BASE}/api/orders/${id}`, {
+      method: "DELETE",
+    });
+    fetchOrders();
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl mb-6">Admin Dashboard</h2>
+
+      <table className="w-full border">
         <thead className="bg-gray-100">
           <tr>
-            <th className="p-2">User</th>
-            <th className="p-2">Total</th>
-            <th className="p-2">Status</th>
-            <th className="p-2">Update</th>
+            <th>User</th>
+            <th>Total</th>
+            <th>Payment</th>
+            <th>Status</th>
+            <th>Action</th>
           </tr>
         </thead>
 
         <tbody>
-          {orders.map((order) => (
-            <tr key={order._id} className="border-t">
-              <td className="p-2">
-                {order.user?.name}
-              </td>
-              <td className="p-2">
-                ₹{order.totalAmount}
-              </td>
-              <td className="p-2">
-                {order.orderStatus}
-              </td>
-              <td className="p-2">
+          {orders.map((o) => (
+            <tr key={o._id} className="border-t text-center">
+              <td>{o.user?.email}</td>
+              <td>₹{o.totalAmount}</td>
+              <td>{o.paymentMethod}</td>
+              <td>
                 <select
-                  value={order.orderStatus}
+                  value={o.status}
                   onChange={(e) =>
-                    updateStatus(order._id, e.target.value)
+                    updateStatus(o._id, e.target.value)
                   }
-                  className="border p-1"
                 >
-                  <option value="Placed">Placed</option>
-                  <option value="Paid">Paid</option>
-                  <option value="Delivered">
-                    Delivered
-                  </option>
+                  <option>Pending</option>
+                  <option>Paid</option>
+                  <option>Delivered</option>
                 </select>
+              </td>
+              <td>
+                <button
+                  className="text-red-600"
+                  onClick={() => deleteOrder(o._id)}
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
