@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useCart } from "../context/CartContext";
 import { API_BASE } from "../utils/api";
+import { motion } from "framer-motion";
 
 /* banner images – already present in public/images */
 const banners = [
@@ -178,6 +179,93 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+          {/* ===============================
+   ABOUT FOUNDER (PRO VERSION)
+   =============================== */}
+<section className="bg-gray-50 py-16">
+  <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+
+    {/* FOUNDER IMAGE */}
+    <motion.div
+      initial={{ opacity: 0, x: -40 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.6 }}
+      viewport={{ once: true }}
+      className="flex justify-center"
+    >
+      <img
+        src="/images/founder.jpg"
+        alt="Founder of BiharBite"
+        className="w-72 h-72 object-cover rounded-full shadow-lg border-4 border-white"
+      />
+    </motion.div>
+
+    {/* FOUNDER CONTENT */}
+    <motion.div
+      initial={{ opacity: 0, x: 40 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.6 }}
+      viewport={{ once: true }}
+    >
+      <h2 className="text-3xl font-bold mb-3 text-gray-900">
+        Meet the Founder
+      </h2>
+
+      <div className="flex items-center gap-3 mb-3">
+        <h3 className="text-xl font-semibold text-red-600">
+          Rupesh Kumar
+        </h3>
+
+        {/* LINKEDIN ICON */}
+        <a
+          href="https://www.linkedin.com/in/rupesh-kumar-9a0ba528a/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-700"
+          title="LinkedIn Profile"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="M4.98 3.5C4.98 4.88 3.88 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM0 8h5v16H0V8zm7.5 0h4.8v2.2h.1c.7-1.3 2.4-2.7 4.9-2.7 5.2 0 6.2 3.4 6.2 7.8V24h-5v-7.6c0-1.8 0-4.1-2.5-4.1s-2.9 2-2.9 4v7.7h-5V8z" />
+          </svg>
+        </a>
+      </div>
+
+      <p className="text-gray-700 leading-relaxed mb-4">
+        BiharBite was started with a simple vision —
+        to bring the authentic taste of Bihar’s traditional
+        sweets like <strong>Anarsa</strong>, <strong>Khaja</strong> and
+        <strong> Tilkut</strong> to every household in India.
+      </p>
+
+      <p className="text-gray-700 leading-relaxed mb-4">
+        I am a Computer Science Engineering graduate from
+        <strong> NIT Bhopal (MANIT)</strong>. While technology is my
+        academic background, my roots and culture have
+        always been close to my heart.
+      </p>
+
+      <p className="text-gray-700 leading-relaxed mb-4">
+        BiharBite is my effort to preserve Bihar’s food
+        heritage using modern technology, transparency
+        and quality-driven processes.
+      </p>
+
+      <p className="italic text-gray-600">
+        “By combining tradition with technology, BiharBite
+        delivers authentic taste with trust.”
+      </p>
+    </motion.div>
+
+  </div>
+</section>
+
+
     </div>
   );
 };
