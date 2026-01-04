@@ -1,6 +1,6 @@
 import express from "express";
 import Order from "../models/Order.js";
-import protect from "../middleware/authMiddleware.js";
+import protect, { adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -9,25 +9,16 @@ const router = express.Router();
    =============================== */
 router.post("/", protect, async (req, res) => {
   try {
-    const {
-      items,
-      totalAmount,
-      paymentMethod,
-    } = req.body;
-
     const order = await Order.create({
       user: req.user._id,
-      items,
-      totalAmount,
-      paymentMethod,
+      items: req.body.items,
+      totalAmount: req.body.totalAmount,
+      paymentMethod: req.body.paymentMethod,
       orderStatus: "Placed",
-      paymentStatus:
-        paymentMethod === "COD" ? "Pending" : "Paid",
+      deliveryStatus: "Assigned",
     });
-
-    res.status(201).json(order);
-  } catch (error) {
-    console.error("CREATE ORDER ERROR:", error);
+    res.json(order);
+  } catch (err) {
     res.status(500).json({ message: "Order create failed" });
   }
 });
@@ -35,40 +26,30 @@ router.post("/", protect, async (req, res) => {
 /* ===============================
    GET ALL ORDERS (ADMIN)
    =============================== */
-router.get("/", async (req, res) => {
+router.get("/", protect, adminOnly, async (req, res) => {
   try {
     const orders = await Order.find()
       .populate("user", "name email")
-      .populate("rider", "name email")
-      .sort({ createdAt: -1 });
-
+      .populate("rider", "name email");
     res.json(orders);
-  } catch (error) {
-    console.error("FETCH ORDERS ERROR:", error);
-    res.status(500).json({ message: "Failed to fetch orders" });
+  } catch (err) {
+    res.status(500).json({ message: "Fetch orders failed" });
   }
 });
 
 /* ===============================
    UPDATE ORDER STATUS (ADMIN)
    =============================== */
-router.put("/:id", async (req, res) => {
+router.put("/:id", protect, adminOnly, async (req, res) => {
   try {
-    const { status } = req.body;
-
     const order = await Order.findById(req.params.id);
-    if (!order) {
-      return res
-        .status(404)
-        .json({ message: "Order not found" });
-    }
+    if (!order)
+      return res.status(404).json({ message: "Order not found" });
 
-    order.orderStatus = status;
+    order.orderStatus = req.body.status;
     await order.save();
-
     res.json(order);
-  } catch (error) {
-    console.error("UPDATE STATUS ERROR:", error);
+  } catch {
     res.status(500).json({ message: "Update failed" });
   }
 });
@@ -76,25 +57,20 @@ router.put("/:id", async (req, res) => {
 /* ===============================
    ASSIGN RIDER (ADMIN)
    =============================== */
-router.put("/:id/assign-rider", async (req, res) => {
+router.put("/:id/assign-rider", protect, adminOnly, async (req, res) => {
   try {
     const { riderId } = req.body;
-
     const order = await Order.findById(req.params.id);
-    if (!order) {
-      return res
-        .status(404)
-        .json({ message: "Order not found" });
-    }
+
+    if (!order)
+      return res.status(404).json({ message: "Order not found" });
 
     order.rider = riderId;
-    order.orderStatus = "Assigned";
-
+    order.deliveryStatus = "Assigned";
     await order.save();
 
-    res.json(order);
-  } catch (error) {
-    console.error("ASSIGN RIDER ERROR:", error);
+    res.json({ message: "Rider assigned", order });
+  } catch (err) {
     res.status(500).json({ message: "Assign rider failed" });
   }
 });
@@ -102,12 +78,11 @@ router.put("/:id/assign-rider", async (req, res) => {
 /* ===============================
    DELETE ORDER (ADMIN)
    =============================== */
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", protect, adminOnly, async (req, res) => {
   try {
     await Order.findByIdAndDelete(req.params.id);
     res.json({ message: "Order deleted" });
-  } catch (error) {
-    console.error("DELETE ORDER ERROR:", error);
+  } catch {
     res.status(500).json({ message: "Delete failed" });
   }
 });

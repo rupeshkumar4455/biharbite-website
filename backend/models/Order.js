@@ -22,18 +22,24 @@ const orderSchema = new mongoose.Schema(
       },
     ],
 
-    totalAmount: Number,
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
 
-    paymentMethod: String,
-
-    paymentStatus: {
+    paymentMethod: {
       type: String,
-      default: "Pending",
+      required: true,
     },
 
     orderStatus: {
       type: String,
-      default: "Placed",
+      default: "Placed", // Admin/User level
+    },
+
+    deliveryStatus: {
+      type: String,
+      default: "Assigned", // 🚴 Rider level
     },
   },
   { timestamps: true }

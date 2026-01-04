@@ -2,11 +2,12 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Rider from "../models/Rider.js";
+import Order from "../models/Order.js";
 
 const router = express.Router();
 
 /* ===============================
-   🔑 TOKEN
+   TOKEN
    =============================== */
 const generateToken = (id) => {
   return jwt.sign(
@@ -17,36 +18,27 @@ const generateToken = (id) => {
 };
 
 /* ===============================
-   🧪 TEST ROUTE (VERY IMPORTANT)
+   TEST ROUTE (DEBUG)
    =============================== */
 router.get("/test", (req, res) => {
   res.send("✅ Rider routes working");
 });
 
 /* ===============================
-   🚴 RIDER LOGIN
+   RIDER LOGIN
    =============================== */
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const rider = await Rider.findOne({
-      email,
-      isActive: true,
-    });
-
+    const rider = await Rider.findOne({ email, isActive: true });
     if (!rider) {
-      return res
-        .status(401)
-        .json({ message: "Invalid email or password" });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     const isMatch = await bcrypt.compare(password, rider.password);
-
     if (!isMatch) {
-      return res
-        .status(401)
-        .json({ message: "Invalid email or password" });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     res.json({
@@ -62,17 +54,70 @@ router.post("/login", async (req, res) => {
 });
 
 /* ===============================
-   📋 GET ALL RIDERS (ADMIN)
+   GET ASSIGNED ORDERS (🔥 THIS WAS MISSING / NOT LOADED)
    =============================== */
-router.get("/all", async (req, res) => {
+router.get("/orders", async (req, res) => {
   try {
-    const riders = await Rider.find({ isActive: true }).select(
-      "-password"
-    );
-    res.json(riders);
+    const auth = req.headers.authorization;
+    if (!auth || !auth.startsWith("Bearer")) {
+      return res.status(401).json({ message: "No token" });
+    }
+
+    const token = auth.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (decoded.role !== "rider") {
+      return res.status(403).json({ message: "Not rider" });
+    }
+
+    const orders = await Order.find({ rider: decoded.id })
+      .populate("user", "name email");
+
+    res.json(orders);
   } catch (err) {
-    console.error("FETCH RIDERS ERROR:", err);
-    res.status(500).json({ message: "Failed to fetch riders" });
+    console.error("RIDER ORDERS ERROR:", err);
+    res.status(500).json({ message: "Failed to fetch orders" });
+  }
+});
+
+/* ===============================
+   UPDATE DELIVERY STATUS
+   =============================== */
+router.put("/orders/:id/status", async (req, res) => {
+  try {
+    const auth = req.headers.authorization;
+    if (!auth || !auth.startsWith("Bearer")) {
+      return res.status(401).json({ message: "No token" });
+    }
+
+    const token = auth.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (decoded.role !== "rider") {
+      return res.status(403).json({ message: "Not rider" });
+    }
+
+    const { status } = req.body;
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (!order.rider || order.rider.toString() !== decoded.id) {
+      return res.status(403).json({ message: "Not your order" });
+    }
+
+    order.deliveryStatus = status;
+    if (status === "Delivered") {
+      order.orderStatus = "Delivered";
+    }
+
+    await order.save();
+    res.json(order);
+  } catch (err) {
+    console.error("RIDER STATUS ERROR:", err);
+    res.status(500).json({ message: "Status update failed" });
   }
 });
 
