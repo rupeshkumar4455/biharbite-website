@@ -108,6 +108,21 @@ const RiderDashboard = () => {
     fetchOrders();
   }, []);
 
+
+
+    const updateDeliveryStatus = async (orderId, status) => {
+  await axios.put(
+    `${import.meta.env.VITE_API_URL}/api/rider/orders/${orderId}/status`,
+    { status },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  fetchOrders();
+};
+
   /* ===============================
      STATUS BADGE COLOR
      =============================== */
@@ -175,36 +190,21 @@ const RiderDashboard = () => {
                 )}
 
                 {order.deliveryStatus === "Accepted" && (
-                  <button
-                    onClick={() =>
-                      updateStatus(order._id, "Picked Up")
-                    }
-                    className="bg-purple-600 text-white px-3 py-1 rounded"
-                  >
-                    Picked Up
-                  </button>
+                  <button onClick={() => updateDeliveryStatus(order._id, "Picked Up")}>
+    Picked Up
+  </button>
                 )}
 
                 {order.deliveryStatus === "Picked Up" && (
-                  <button
-                    onClick={() =>
-                      updateStatus(order._id, "On The Way")
-                    }
-                    className="bg-orange-600 text-white px-3 py-1 rounded"
-                  >
-                    On The Way
-                  </button>
+                  <button onClick={() => updateDeliveryStatus(order._id, "On The Way")}>
+    On The Way
+  </button>
                 )}
 
                 {order.deliveryStatus === "On The Way" && (
-                  <button
-                    onClick={() =>
-                      updateStatus(order._id, "Delivered")
-                    }
-                    className="bg-green-600 text-white px-3 py-1 rounded"
-                  >
-                    Delivered
-                  </button>
+                  <button onClick={() => updateDeliveryStatus(order._id, "Delivered")}>
+    Delivered
+  </button>
                 )}
               </div>
 
@@ -212,10 +212,12 @@ const RiderDashboard = () => {
                 Tracking active while delivering
               </p>
             </div>
+            
           ))}
         </div>
       )}
     </div>
+    
   );
 };
 

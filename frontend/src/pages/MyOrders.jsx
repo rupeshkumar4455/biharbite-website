@@ -1,53 +1,61 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate, Link } from "react-router-dom";
 
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchMyOrders = async () => {
-      try {
-        const token = localStorage.getItem("token");
+  /* ===============================
+     FETCH MY ORDERS
+     =============================== */
+  const fetchMyOrders = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-        // 🔐 if user not logged in
-        if (!token) {
-          alert("Please login to view your orders");
-          navigate("/login");
-          return;
-        }
-
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/orders/my`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setOrders(res.data);
-      } catch (error) {
-        console.error("MY ORDERS FETCH ERROR:", error);
-
-        // 🔐 token expired / invalid
-        if (error.response?.status === 401) {
-          alert("Session expired. Please login again.");
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          navigate("/login");
-        } else {
-          alert("Failed to load orders");
-        }
-      } finally {
-        setLoading(false);
+      // 🔐 if user not logged in
+      if (!token) {
+        alert("Please login to view your orders");
+        navigate("/login");
+        return;
       }
-    };
 
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/orders/my`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setOrders(res.data);
+    } catch (error) {
+      console.error("MY ORDERS FETCH ERROR:", error);
+
+      if (error.response?.status === 401) {
+        alert("Session expired. Please login again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+      } else {
+        alert("Failed to load orders");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ===============================
+     AUTO REFRESH (LIVE UPDATE)
+     =============================== */
+  useEffect(() => {
     fetchMyOrders();
+
+    // 🔁 auto refresh every 10 sec
+    const interval = setInterval(fetchMyOrders, 10000);
+    return () => clearInterval(interval);
   }, [navigate]);
 
   if (loading) {
@@ -63,7 +71,9 @@ const MyOrders = () => {
       <h2 className="text-2xl font-semibold mb-6">My Orders</h2>
 
       {orders.length === 0 && (
-        <p className="text-gray-600">You have not placed any orders yet.</p>
+        <p className="text-gray-600">
+          You have not placed any orders yet.
+        </p>
       )}
 
       {orders.map((order) => (
@@ -89,7 +99,17 @@ const MyOrders = () => {
           </p>
 
           <p>
-            <b>Order Status:</b> {order.orderStatus}
+            <b>Order Status:</b>{" "}
+            <span className="font-semibold">
+              {order.orderStatus}
+            </span>
+          </p>
+
+          <p>
+            <b>Delivery Status:</b>{" "}
+            <span className="text-blue-600 font-semibold">
+              {order.deliveryStatus}
+            </span>
           </p>
 
           <p>
@@ -107,6 +127,18 @@ const MyOrders = () => {
               ))}
             </ul>
           </div>
+
+          {/* TRACK LIVE BUTTON */}
+          {order.deliveryStatus !== "Delivered" && (
+            <div className="mt-3">
+              <Link
+                to={`/track/${order._id}`}
+                className="text-blue-600 underline text-sm"
+              >
+                Track Live
+              </Link>
+            </div>
+          )}
         </div>
       ))}
     </div>
