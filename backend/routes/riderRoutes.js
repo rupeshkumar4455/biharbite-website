@@ -17,13 +17,23 @@ const generateToken = (id) => {
 };
 
 /* ===============================
+   🧪 TEST ROUTE (VERY IMPORTANT)
+   =============================== */
+router.get("/test", (req, res) => {
+  res.send("✅ Rider routes working");
+});
+
+/* ===============================
    🚴 RIDER LOGIN
    =============================== */
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const rider = await Rider.findOne({ email, isActive: true });
+    const rider = await Rider.findOne({
+      email,
+      isActive: true,
+    });
 
     if (!rider) {
       return res
@@ -61,6 +71,7 @@ router.get("/all", async (req, res) => {
     );
     res.json(riders);
   } catch (err) {
+    console.error("FETCH RIDERS ERROR:", err);
     res.status(500).json({ message: "Failed to fetch riders" });
   }
 });

@@ -4,7 +4,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 
 /* ===============================
-   ROUTES IMPORT
+   ROUTES
    =============================== */
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
@@ -16,7 +16,7 @@ dotenv.config();
 const app = express();
 
 /* ===============================
-   🌐 CORS (RENDER + VERCEL SAFE)
+   🌐 CORS (RENDER + VERCEL)
    =============================== */
 app.use(
   cors({
@@ -40,17 +40,17 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
-app.use("/api/rider", riderRoutes); // 🔥 VERY IMPORTANT
+app.use("/api/rider", riderRoutes); // 🔥 MUST EXIST
 
 /* ===============================
-   ROOT TEST
+   ROOT CHECK
    =============================== */
 app.get("/", (req, res) => {
   res.send("🚀 BiharBite Backend Running");
 });
 
 /* ===============================
-   DATABASE + SERVER START
+   DB + SERVER
    =============================== */
 const PORT = process.env.PORT || 5000;
 
@@ -63,5 +63,5 @@ mongoose
     });
   })
   .catch((err) => {
-    console.error("❌ MongoDB connection error:", err.message);
+    console.error("❌ MongoDB error:", err.message);
   });
