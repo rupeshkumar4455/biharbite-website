@@ -15,52 +15,60 @@ const AdminDashboard = () => {
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/orders`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setOrders(res.data);
+
+      // ✅ FORCE ARRAY
+      setOrders(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("ADMIN FETCH ORDERS ERROR:", err);
+      setOrders([]);
     }
   };
 
   /* ===============================
-     FETCH RIDERS (NEW)
+     FETCH RIDERS
      =============================== */
   const fetchRiders = async () => {
     try {
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/rider/all`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setRiders(res.data);
+
+      // ✅ HANDLE ALL CASES
+      if (Array.isArray(res.data)) {
+        setRiders(res.data);
+      } else if (Array.isArray(res.data?.riders)) {
+        setRiders(res.data.riders);
+      } else {
+        setRiders([]);
+      }
     } catch (err) {
       console.error("FETCH RIDERS ERROR:", err);
+      setRiders([]);
     }
   };
 
   /* ===============================
-     ASSIGN RIDER (NEW)
+     ASSIGN RIDER
      =============================== */
   const assignRider = async (orderId, riderId) => {
+    if (!riderId) return;
+
     try {
       await axios.put(
         `${import.meta.env.VITE_API_URL}/api/orders/${orderId}/assign-rider`,
         { riderId },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       fetchOrders();
-    } catch (err) {
+    } catch {
       alert("Failed to assign rider");
     }
   };
@@ -69,16 +77,16 @@ const AdminDashboard = () => {
      UPDATE STATUS
      =============================== */
   const updateStatus = async (id, status) => {
-    await axios.put(
-      `${import.meta.env.VITE_API_URL}/api/orders/${id}`,
-      { status },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    fetchOrders();
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/orders/${id}`,
+        { status },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      fetchOrders();
+    } catch {}
   };
 
   /* ===============================
@@ -87,33 +95,33 @@ const AdminDashboard = () => {
   const deleteOrder = async (id) => {
     if (!window.confirm("Delete this order?")) return;
 
-    await axios.delete(
-      `${import.meta.env.VITE_API_URL}/api/orders/${id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    fetchOrders();
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/api/orders/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      fetchOrders();
+    } catch {}
   };
 
   /* ===============================
      DOWNLOAD INVOICE
      =============================== */
   const downloadInvoice = (order) => {
+    const items = Array.isArray(order.items) ? order.items : [];
+
     const content = `
 BiharBite Invoice
 
 Order ID: ${order._id}
-Customer: ${order.user?.name}
-Email: ${order.user?.email}
+Customer: ${order.user?.name || ""}
+Email: ${order.user?.email || ""}
 
 Items:
-${order.items
-  .map(
-    (i) => `${i.name}  x${i.qty}  ₹${i.price * i.qty}`
-  )
+${items
+  .map((i) => `${i.name} x${i.qty} ₹${i.price * i.qty}`)
   .join("\n")}
 
 Total: ₹${order.totalAmount}
@@ -122,9 +130,7 @@ Status: ${order.orderStatus}
 Date: ${new Date(order.createdAt).toLocaleString()}
     `;
 
-    const blob = new Blob([content], {
-      type: "text/plain",
-    });
+    const blob = new Blob([content], { type: "text/plain" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = `invoice-${order._id}.txt`;
@@ -137,7 +143,7 @@ Date: ${new Date(order.createdAt).toLocaleString()}
   }, []);
 
   /* ===============================
-     STATUS BADGE COLOR
+     STATUS COLOR
      =============================== */
   const statusColor = (status) => {
     if (status === "Placed") return "bg-yellow-100 text-yellow-700";
@@ -167,86 +173,90 @@ Date: ${new Date(order.createdAt).toLocaleString()}
           </thead>
 
           <tbody className="text-center">
-            {orders.map((order) => (
-              <tr key={order._id} className="border-t">
-                <td>{order.user?.name}</td>
-                <td>{order.user?.email}</td>
-                <td>₹{order.totalAmount}</td>
-
-                {/* STATUS */}
-                <td>
-                  <select
-                    value={order.orderStatus}
-                    onChange={(e) =>
-                      updateStatus(order._id, e.target.value)
-                    }
-                    className={`px-2 py-1 rounded ${statusColor(
-                      order.orderStatus
-                    )}`}
-                  >
-                    <option>Placed</option>
-                    <option>Paid</option>
-                    <option>Delivered</option>
-                  </select>
-                </td>
-
-                {/* RIDER ASSIGN (NEW) */}
-                <td>
-                  <select
-                    value={order.rider?._id || ""}
-                    onChange={(e) =>
-                      assignRider(order._id, e.target.value)
-                    }
-                    className="border px-2 py-1 rounded"
-                  >
-                    <option value="">
-                      {order.rider
-                        ? order.rider.name
-                        : "Assign Rider"}
-                    </option>
-                    {riders.map((r) => (
-                      <option key={r._id} value={r._id}>
-                        {r.name}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-
-                {/* DATE */}
-                <td>
-                  {new Date(order.createdAt).toLocaleString()}
-                </td>
-
-                {/* ACTIONS */}
-                <td className="space-x-2">
-                  <button
-                    onClick={() => setSelectedOrder(order)}
-                    className="text-blue-600"
-                  >
-                    View
-                  </button>
-                  <button
-                    onClick={() => downloadInvoice(order)}
-                    className="text-green-600"
-                  >
-                    Invoice
-                  </button>
-                  <button
-                    onClick={() => deleteOrder(order._id)}
-                    className="text-red-600"
-                  >
-                    Delete
-                  </button>
+            {orders.length === 0 ? (
+              <tr>
+                <td colSpan="7" className="py-6 text-gray-500">
+                  No orders found
                 </td>
               </tr>
-            ))}
+            ) : (
+              orders.map((order) => (
+                <tr key={order._id} className="border-t">
+                  <td>{order.user?.name}</td>
+                  <td>{order.user?.email}</td>
+                  <td>₹{order.totalAmount}</td>
+
+                  <td>
+                    <select
+                      value={order.orderStatus}
+                      onChange={(e) =>
+                        updateStatus(order._id, e.target.value)
+                      }
+                      className={`px-2 py-1 rounded ${statusColor(
+                        order.orderStatus
+                      )}`}
+                    >
+                      <option>Placed</option>
+                      <option>Paid</option>
+                      <option>Delivered</option>
+                    </select>
+                  </td>
+
+                  <td>
+                    <select
+                      value={order.rider?._id || ""}
+                      onChange={(e) =>
+                        assignRider(order._id, e.target.value)
+                      }
+                      className="border px-2 py-1 rounded"
+                    >
+                      <option value="">
+                        {order.rider
+                          ? order.rider.name
+                          : "Assign Rider"}
+                      </option>
+
+                      {Array.isArray(riders) &&
+                        riders.map((r) => (
+                          <option key={r._id} value={r._id}>
+                            {r.name}
+                          </option>
+                        ))}
+                    </select>
+                  </td>
+
+                  <td>
+                    {new Date(order.createdAt).toLocaleString()}
+                  </td>
+
+                  <td className="space-x-2">
+                    <button
+                      onClick={() => setSelectedOrder(order)}
+                      className="text-blue-600"
+                    >
+                      View
+                    </button>
+                    <button
+                      onClick={() => downloadInvoice(order)}
+                      className="text-green-600"
+                    >
+                      Invoice
+                    </button>
+                    <button
+                      onClick={() => deleteOrder(order._id)}
+                      className="text-red-600"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* ===============================
-         ORDER DETAIL MODAL
-         =============================== */}
+      {/* ORDER DETAIL MODAL */}
       {selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
           <div className="bg-white p-6 rounded w-full max-w-md">
@@ -254,35 +264,16 @@ Date: ${new Date(order.createdAt).toLocaleString()}
               Order Details
             </h3>
 
-            <p>
-              <strong>User:</strong>{" "}
-              {selectedOrder.user?.name}
-            </p>
-            <p>
-              <strong>Email:</strong>{" "}
-              {selectedOrder.user?.email}
-            </p>
-
-            <div className="mt-3">
-              <strong>Items:</strong>
-              <ul className="list-disc ml-5 text-sm">
-                {selectedOrder.items.map((i, idx) => (
-                  <li key={idx}>
-                    {i.name} × {i.qty} = ₹
-                    {i.price * i.qty}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <p className="mt-3">
-              <strong>Total:</strong> ₹
-              {selectedOrder.totalAmount}
-            </p>
-            <p>
-              <strong>Payment:</strong>{" "}
-              {selectedOrder.paymentMethod}
-            </p>
+            <ul className="list-disc ml-5 text-sm">
+              {(Array.isArray(selectedOrder.items)
+                ? selectedOrder.items
+                : []
+              ).map((i, idx) => (
+                <li key={idx}>
+                  {i.name} × {i.qty} = ₹{i.price * i.qty}
+                </li>
+              ))}
+            </ul>
 
             <button
               onClick={() => setSelectedOrder(null)}
