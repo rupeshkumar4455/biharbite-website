@@ -16,6 +16,11 @@ import Shipping from "./pages/Shipping";
 import Refund from "./pages/Refund";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import RiderLogin from "./pages/rider/RiderLogin";
+import RiderDashboard from "./pages/rider/RiderDashboard";
+import Contact from "./pages/Contact";
+
+
 
 const App = () => {
   return (
@@ -40,6 +45,12 @@ const App = () => {
         <Route path="/refund" element={<Refund />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/rider/login" element={<RiderLogin />} />
+        <Route path="/rider/dashboard" element={<RiderDashboard />} />
+        <Route path="/contact" element={<Contact />} />
+
+        
+
       </Routes>
 
       <Footer />

@@ -7,6 +7,10 @@ const orderSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    rider: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Rider",
+    },
     items: [
       {
         name: String,
@@ -16,11 +20,7 @@ const orderSchema = new mongoose.Schema(
     ],
     totalAmount: Number,
     paymentMethod: String,
-    paymentStatus: {
-      type: String,
-      default: "Pending",
-    },
-    orderStatus: {
+    deliveryStatus: {
       type: String,
       default: "Placed",
     },

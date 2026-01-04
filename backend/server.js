@@ -3,45 +3,31 @@ import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
 
-// Routes
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
+import riderRoutes from "./routes/riderRoutes.js";
 
 dotenv.config();
 
 const app = express();
 
 /* ===============================
-   🌐 CORS – FINAL PRODUCTION FIX
+   🔥 CORS – FINAL FIX (DEV + PROD)
    =============================== */
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "https://biharbite-website.vercel.app",
-];
-
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // allow requests with no origin (Postman, curl)
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        return callback(
-          new Error("Not allowed by CORS")
-        );
-      }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: [
+      "http://localhost:5173",              // local dev
+      "https://biharbite-website.vercel.app" // vercel prod
+    ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
 
-// 🔥 VERY IMPORTANT (preflight support)
+// 👇 VERY IMPORTANT (preflight)
 app.options("*", cors());
 
 /* ===============================
@@ -55,16 +41,17 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/rider", riderRoutes);
 
 /* ===============================
-   ROOT TEST ROUTE
+   ROOT
    =============================== */
 app.get("/", (req, res) => {
   res.send("🚀 BiharBite Backend Running");
 });
 
 /* ===============================
-   DATABASE + SERVER START
+   DB + SERVER
    =============================== */
 const PORT = process.env.PORT || 5000;
 
@@ -72,10 +59,8 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB connected");
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
+    app.listen(PORT, () =>
+      console.log(`🚀 Server running on port ${PORT}`)
+    );
   })
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
-  });
+  .catch((err) => console.error(err));

@@ -2,10 +2,10 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-gray-300 mt-16">
-      <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="bg-gray-900 text-gray-300 py-12">
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
 
-        {/* ================= BRAND ================= */}
+        {/* BRAND */}
         <div>
           <h2 className="text-2xl font-bold text-white mb-3">
             Bihar<span className="text-red-500">Bite</span>
@@ -20,93 +20,100 @@ const Footer = () => {
           </p>
         </div>
 
-        {/* ================= QUICK LINKS ================= */}
+
+        {/* QUICK LINKS */}
         <div>
-          <h3 className="text-lg font-semibold text-white mb-3">
+          <h4 className="text-lg font-semibold text-white mb-3">
             Quick Links
-          </h3>
+          </h4>
           <ul className="space-y-2 text-sm">
             <li>
-              <Link to="/" className="hover:text-white">
+              <Link to="/" className="hover:text-red-500">
                 Home
               </Link>
             </li>
             <li>
-              <Link to="/cart" className="hover:text-white">
+              <Link to="/cart" className="hover:text-red-500">
                 Cart
               </Link>
             </li>
             <li>
-              <Link to="/my-orders" className="hover:text-white">
+              <Link to="/my-orders" className="hover:text-red-500">
                 My Orders
               </Link>
             </li>
             <li>
-              <Link to="/login" className="hover:text-white">
-                Login
+              <Link to="/admin/login" className="hover:text-red-500">
+                Admin Login
               </Link>
             </li>
           </ul>
         </div>
 
-        {/* ================= SUPPORT ================= */}
+        {/* SUPPORT */}
         <div>
-          <h3 className="text-lg font-semibold text-white mb-3">
+          <h4 className="text-lg font-semibold text-white mb-3">
             Support
-          </h3>
+          </h4>
           <ul className="space-y-2 text-sm">
             <li>
-              <Link to="/shipping" className="hover:text-white">
+              <Link to="/shipping" className="hover:text-red-500">
                 Shipping Policy
               </Link>
             </li>
             <li>
-              <Link to="/refund" className="hover:text-white">
+              <Link to="/refund" className="hover:text-red-500">
                 Refund Policy
               </Link>
             </li>
             <li>
-              <Link to="/privacy" className="hover:text-white">
+              <Link to="/privacy" className="hover:text-red-500">
                 Privacy Policy
               </Link>
             </li>
             <li>
-              <Link to="/terms" className="hover:text-white">
+              <Link to="/terms" className="hover:text-red-500">
                 Terms & Conditions
               </Link>
             </li>
+            <li>
+  <Link to="/contact" className="hover:text-red-500">
+    Contact Us
+  </Link>
+</li>
+
           </ul>
         </div>
 
-        {/* ================= CONTACT ================= */}
+        {/* DELIVERY PARTNER */}
         <div>
-          <h3 className="text-lg font-semibold text-white mb-3">
-            Contact Us
-          </h3>
+          <h4 className="text-lg font-semibold text-white mb-3">
+            Delivery Partner
+          </h4>
           <ul className="space-y-2 text-sm">
             <li>
-              📍 Bihar, India
+              <Link
+                to="/rider/login"
+                className="hover:text-red-500 font-medium"
+              >
+                Rider Login
+              </Link>
             </li>
-            <li>
-              📧 support@biharbite.com
-            </li>
-            <li>
-              📞 +91 6268947041
-            </li>
-            <li className="text-gray-400">
-              Mon – Sat (10 AM – 7 PM)
+            <li className="text-gray-400 text-xs">
+              Dedicated portal for BiharBite riders
             </li>
           </ul>
         </div>
       </div>
 
-      {/* ================= BOTTOM BAR ================= */}
-      <div className="border-t border-gray-800 text-center py-4 text-sm text-gray-400">
-        © {new Date().getFullYear()}{" "}
-        <span className="text-white font-medium">
-          BiharBite
-        </span>
-        . All rights reserved.
+
+          
+      
+
+
+      {/* BOTTOM */}
+      <div className="border-t border-gray-700 mt-10 pt-6 text-center text-sm text-gray-400">
+        © {new Date().getFullYear()} BiharBite. All rights reserved.
       </div>
     </footer>
   );

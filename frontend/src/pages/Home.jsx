@@ -236,19 +236,24 @@ const Home = () => {
         </a>
       </div>
 
-      <p className="text-gray-700 leading-relaxed mb-4">
+
+
+
+<p className="text-gray-700 leading-relaxed mb-4">
+        I am a Computer Science Engineering graduate from
+        <strong> NIT Bhopal (MANIT)</strong>. While technology is my
+        academic background, my roots and culture have
+        always been close to my heart.
+      </p>
+
+       <p className="text-gray-700 leading-relaxed mb-4">
         BiharBite was started with a simple vision —
         to bring the authentic taste of Bihar’s traditional
         sweets like <strong>Anarsa</strong>, <strong>Khaja</strong> and
         <strong> Tilkut</strong> to every household in India.
       </p>
 
-      <p className="text-gray-700 leading-relaxed mb-4">
-        I am a Computer Science Engineering graduate from
-        <strong> NIT Bhopal (MANIT)</strong>. While technology is my
-        academic background, my roots and culture have
-        always been close to my heart.
-      </p>
+       
 
       <p className="text-gray-700 leading-relaxed mb-4">
         BiharBite is my effort to preserve Bihar’s food

@@ -1,48 +1,54 @@
 import express from "express";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt"; // ✅ FIXED (bcryptjs ❌)
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
 const router = express.Router();
 
-const generateToken = (id, isAdmin) => {
+/* ===============================
+   TOKEN GENERATOR
+   =============================== */
+const generateToken = (id, role) => {
   return jwt.sign(
-    { id, isAdmin },
+    { id, role },
     process.env.JWT_SECRET,
     { expiresIn: "30d" }
   );
 };
 
 /* ===============================
-   REGISTER (USER ONLY)
+   REGISTER (USER)
    =============================== */
 router.post("/register", async (req, res) => {
-  const { name, email, password } = req.body;
-
   try {
-    const exists = await User.findOne({ email });
-    if (exists) {
+    const { name, email, password } = req.body;
+
+    const userExists = await User.findOne({ email });
+    if (userExists) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const hashed = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
       email,
-      password: hashed,
+      password: hashedPassword,
       isAdmin: false,
     });
 
     res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      isAdmin: false,
-      token: generateToken(user._id, false),
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: "user",
+      },
+      token: generateToken(user._id, "user"),
     });
-  } catch (err) {
-    res.status(500).json({ message: "Register failed" });
+  } catch (error) {
+    console.error("REGISTER ERROR:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -50,40 +56,45 @@ router.post("/register", async (req, res) => {
    LOGIN (USER + ADMIN)
    =============================== */
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-
   try {
-    // 🔐 ADMIN LOGIN — FINAL & HARD-CODED
+    const { email, password } = req.body;
+
+    /* 🔐 ADMIN LOGIN */
     if (email === "admin" && password === "admin123") {
       return res.json({
-        _id: "admin",
-        name: "Admin",
-        email: "admin",
-        isAdmin: true,
-        token: generateToken("admin", true),
+        user: {
+          _id: "admin",
+          name: "Admin",
+          email: "admin",
+          role: "admin",
+        },
+        token: generateToken("admin", "admin"),
       });
     }
 
-    // 👤 USER LOGIN
+    /* 👤 USER LOGIN */
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
     res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      isAdmin: false,
-      token: generateToken(user._id, false),
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: "user",
+      },
+      token: generateToken(user._id, "user"),
     });
-  } catch (err) {
-    res.status(500).json({ message: "Login failed" });
+  } catch (error) {
+    console.error("LOGIN ERROR:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
