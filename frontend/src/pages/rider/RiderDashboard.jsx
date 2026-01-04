@@ -4,16 +4,16 @@ import { useNavigate } from "react-router-dom";
 
 const RiderDashboard = () => {
   const navigate = useNavigate();
-  const [orders, setOrders] = useState([]);
-
   const token = localStorage.getItem("riderToken");
+  const rider = JSON.parse(localStorage.getItem("rider"));
+
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
     if (!token) {
       navigate("/rider/login");
       return;
     }
-
     fetchOrders();
   }, []);
 
@@ -29,15 +29,15 @@ const RiderDashboard = () => {
       );
       setOrders(res.data);
     } catch (err) {
-      console.error("RIDER ORDERS ERROR:", err);
+      console.error("RIDER FETCH ORDERS ERROR:", err);
     }
   };
 
-  const updateStatus = async (orderId, deliveryStatus) => {
+  const updateStatus = async (orderId, status) => {
     try {
       await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/rider/orders/${orderId}/status`,
-        { deliveryStatus },
+        `${import.meta.env.VITE_API_URL}/api/rider/order/${orderId}/status`,
+        { status },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -46,81 +46,66 @@ const RiderDashboard = () => {
       );
       fetchOrders();
     } catch (err) {
-      alert("Status update failed");
+      alert("Failed to update status");
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("riderToken");
-    localStorage.removeItem("rider");
-    navigate("/rider/login");
-  };
-
   return (
-    <div className="max-w-6xl mx-auto p-6 min-h-[70vh]">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">
-          Rider Dashboard
-        </h2>
+    <div className="max-w-6xl mx-auto px-6 py-10">
+      <h2 className="text-3xl font-bold mb-6">
+        🚴 Rider Dashboard
+      </h2>
 
-        <button
-          onClick={logout}
-          className="bg-black text-white px-4 py-2 rounded"
-        >
-          Logout
-        </button>
-      </div>
+      <p className="mb-8 text-gray-600">
+        Welcome, <span className="font-semibold">{rider?.name}</span>
+      </p>
 
       {orders.length === 0 ? (
-        <p className="text-gray-600">
-          No assigned orders yet.
+        <p className="text-gray-500">
+          No orders assigned yet.
         </p>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {orders.map((order) => (
             <div
               key={order._id}
-              className="border p-4 rounded shadow-sm"
+              className="border rounded-lg p-5 shadow-sm bg-white"
             >
-              <p className="text-sm text-gray-500">
-                Order ID
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="font-semibold">
+                  Order #{order._id.slice(-6)}
+                </h3>
+                <span className="text-sm text-gray-500">
+                  {new Date(order.createdAt).toLocaleString()}
+                </span>
+              </div>
+
+              <p className="text-sm mb-1">
+                👤 Customer: {order.user?.name}
               </p>
-              <p className="font-medium mb-2">
-                {order._id}
+              <p className="text-sm mb-1">
+                💳 Payment: {order.paymentMethod}
+              </p>
+              <p className="text-sm mb-3">
+                📦 Status:{" "}
+                <span className="font-semibold">
+                  {order.orderStatus}
+                </span>
               </p>
 
-              <p>
-                <strong>Customer:</strong>{" "}
-                {order.user?.name}
-              </p>
-
-              <p>
-                <strong>Total:</strong> ₹
-                {order.totalAmount}
-              </p>
-
-              <p>
-                <strong>Status:</strong>{" "}
-                {order.deliveryStatus}
-              </p>
-
-              <div className="flex flex-wrap gap-2 mt-4">
-                {[
-                  "Accepted",
-                  "Picked Up",
-                  "Out for Delivery",
-                  "Delivered",
-                ].map((status) => (
-                  <button
-                    key={status}
-                    onClick={() =>
-                      updateStatus(order._id, status)
-                    }
-                    className="border px-3 py-1 rounded hover:bg-gray-100"
-                  >
-                    {status}
-                  </button>
-                ))}
+              <div className="flex gap-3">
+                <select
+                  value={order.orderStatus}
+                  onChange={(e) =>
+                    updateStatus(order._id, e.target.value)
+                  }
+                  className="border p-2 rounded"
+                >
+                  <option>Placed</option>
+                  <option>Picked Up</option>
+                  <option>Out for Delivery</option>
+                  <option>Delivered</option>
+                </select>
               </div>
             </div>
           ))}

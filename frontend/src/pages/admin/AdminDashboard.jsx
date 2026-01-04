@@ -3,6 +3,7 @@ import axios from "axios";
 
 const AdminDashboard = () => {
   const [orders, setOrders] = useState([]);
+  const [riders, setRiders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const token = localStorage.getItem("token");
 
@@ -22,6 +23,45 @@ const AdminDashboard = () => {
       setOrders(res.data);
     } catch (err) {
       console.error("ADMIN FETCH ORDERS ERROR:", err);
+    }
+  };
+
+  /* ===============================
+     FETCH RIDERS (NEW)
+     =============================== */
+  const fetchRiders = async () => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/rider/all`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setRiders(res.data);
+    } catch (err) {
+      console.error("FETCH RIDERS ERROR:", err);
+    }
+  };
+
+  /* ===============================
+     ASSIGN RIDER (NEW)
+     =============================== */
+  const assignRider = async (orderId, riderId) => {
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/orders/${orderId}/assign-rider`,
+        { riderId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      fetchOrders();
+    } catch (err) {
+      alert("Failed to assign rider");
     }
   };
 
@@ -59,7 +99,7 @@ const AdminDashboard = () => {
   };
 
   /* ===============================
-     DOWNLOAD INVOICE (PDF)
+     DOWNLOAD INVOICE
      =============================== */
   const downloadInvoice = (order) => {
     const content = `
@@ -78,7 +118,7 @@ ${order.items
 
 Total: ₹${order.totalAmount}
 Payment: ${order.paymentMethod}
-Status: ${order.status}
+Status: ${order.orderStatus}
 Date: ${new Date(order.createdAt).toLocaleString()}
     `;
 
@@ -93,6 +133,7 @@ Date: ${new Date(order.createdAt).toLocaleString()}
 
   useEffect(() => {
     fetchOrders();
+    fetchRiders();
   }, []);
 
   /* ===============================
@@ -112,19 +153,20 @@ Date: ${new Date(order.createdAt).toLocaleString()}
       </h2>
 
       <div className="overflow-x-auto">
-        <table className="w-full border">
+        <table className="w-full border text-sm">
           <thead className="bg-gray-100">
             <tr>
               <th>User</th>
               <th>Email</th>
               <th>Total</th>
               <th>Status</th>
+              <th>Rider</th>
               <th>Date</th>
               <th>Actions</th>
             </tr>
           </thead>
 
-          <tbody className="text-center text-sm">
+          <tbody className="text-center">
             {orders.map((order) => (
               <tr key={order._id} className="border-t">
                 <td>{order.user?.name}</td>
@@ -134,17 +176,39 @@ Date: ${new Date(order.createdAt).toLocaleString()}
                 {/* STATUS */}
                 <td>
                   <select
-                    value={order.status}
+                    value={order.orderStatus}
                     onChange={(e) =>
                       updateStatus(order._id, e.target.value)
                     }
                     className={`px-2 py-1 rounded ${statusColor(
-                      order.status
+                      order.orderStatus
                     )}`}
                   >
                     <option>Placed</option>
                     <option>Paid</option>
                     <option>Delivered</option>
+                  </select>
+                </td>
+
+                {/* RIDER ASSIGN (NEW) */}
+                <td>
+                  <select
+                    value={order.rider?._id || ""}
+                    onChange={(e) =>
+                      assignRider(order._id, e.target.value)
+                    }
+                    className="border px-2 py-1 rounded"
+                  >
+                    <option value="">
+                      {order.rider
+                        ? order.rider.name
+                        : "Assign Rider"}
+                    </option>
+                    {riders.map((r) => (
+                      <option key={r._id} value={r._id}>
+                        {r.name}
+                      </option>
+                    ))}
                   </select>
                 </td>
 

@@ -1,10 +1,13 @@
 import express from "express";
-import bcrypt from "bcrypt"; // ✅ bcrypt (NOT bcryptjs)
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import Rider from "../models/Rider.js";
 
 const router = express.Router();
 
+/* ===============================
+   TOKEN GENERATOR
+   =============================== */
 const generateToken = (id) => {
   return jwt.sign(
     { id, role: "rider" },
@@ -13,11 +16,14 @@ const generateToken = (id) => {
   );
 };
 
+/* ===============================
+   RIDER LOGIN
+   =============================== */
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-
   try {
-    const rider = await Rider.findOne({ email });
+    const { email, password } = req.body;
+
+    const rider = await Rider.findOne({ email, isActive: true });
     if (!rider) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
@@ -27,21 +33,30 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    if (!rider.isActive) {
-      return res.status(403).json({ message: "Rider inactive" });
-    }
-
     res.json({
-      rider: {
-        _id: rider._id,
-        name: rider.name,
-        email: rider.email,
-      },
+      _id: rider._id,
+      name: rider.name,
+      email: rider.email,
       token: generateToken(rider._id),
     });
-  } catch (err) {
-    console.error("RIDER LOGIN ERROR:", err);
+  } catch (error) {
+    console.error("RIDER LOGIN ERROR:", error);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+/* ===============================
+   GET ALL RIDERS (ADMIN)
+   =============================== */
+router.get("/all", async (req, res) => {
+  try {
+    const riders = await Rider.find({ isActive: true }).select(
+      "_id name email"
+    );
+    res.json(riders);
+  } catch (error) {
+    console.error("FETCH RIDERS ERROR:", error);
+    res.status(500).json({ message: "Failed to fetch riders" });
   }
 });
 

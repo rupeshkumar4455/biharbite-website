@@ -54,4 +54,26 @@ router.get("/", protect, adminOnly, async (req, res) => {
   }
 });
 
+// Assign rider to order (ADMIN)
+router.put("/:id/assign-rider", async (req, res) => {
+  try {
+    const { riderId } = req.body;
+
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    order.rider = riderId;
+    order.orderStatus = "Picked Up";
+    await order.save();
+
+    res.json(order);
+  } catch (error) {
+    console.error("ASSIGN RIDER ERROR:", error);
+    res.status(500).json({ message: "Failed to assign rider" });
+  }
+});
+
+
 export default router;
