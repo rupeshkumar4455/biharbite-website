@@ -1,6 +1,6 @@
 import express from "express";
 import Order from "../models/Order.js";
-import protect, { adminOnly } from "../middleware/authMiddleware.js";
+import protect from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -9,71 +9,107 @@ const router = express.Router();
    =============================== */
 router.post("/", protect, async (req, res) => {
   try {
+    const {
+      items,
+      totalAmount,
+      paymentMethod,
+    } = req.body;
+
     const order = await Order.create({
       user: req.user._id,
-      items: req.body.items,
-      totalAmount: req.body.totalAmount,
-      paymentMethod: req.body.paymentMethod,
-      paymentStatus: "Pending",
+      items,
+      totalAmount,
+      paymentMethod,
       orderStatus: "Placed",
+      paymentStatus:
+        paymentMethod === "COD" ? "Pending" : "Paid",
     });
 
     res.status(201).json(order);
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error("CREATE ORDER ERROR:", error);
     res.status(500).json({ message: "Order create failed" });
   }
 });
 
 /* ===============================
-   USER: MY ORDERS
+   GET ALL ORDERS (ADMIN)
    =============================== */
-router.get("/my", protect, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id }).sort({
-      createdAt: -1,
-    });
+    const orders = await Order.find()
+      .populate("user", "name email")
+      .populate("rider", "name email")
+      .sort({ createdAt: -1 });
+
     res.json(orders);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to fetch user orders" });
+  } catch (error) {
+    console.error("FETCH ORDERS ERROR:", error);
+    res.status(500).json({ message: "Failed to fetch orders" });
   }
 });
 
 /* ===============================
-   ADMIN: ALL ORDERS
+   UPDATE ORDER STATUS (ADMIN)
    =============================== */
-router.get("/", protect, adminOnly, async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
-    const orders = await Order.find()
-      .populate("user", "name email")
-      .sort({ createdAt: -1 });
+    const { status } = req.body;
 
-    res.json(orders);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to fetch admin orders" });
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res
+        .status(404)
+        .json({ message: "Order not found" });
+    }
+
+    order.orderStatus = status;
+    await order.save();
+
+    res.json(order);
+  } catch (error) {
+    console.error("UPDATE STATUS ERROR:", error);
+    res.status(500).json({ message: "Update failed" });
   }
 });
 
-// Assign rider to order (ADMIN)
+/* ===============================
+   ASSIGN RIDER (ADMIN)
+   =============================== */
 router.put("/:id/assign-rider", async (req, res) => {
   try {
     const { riderId } = req.body;
 
     const order = await Order.findById(req.params.id);
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+      return res
+        .status(404)
+        .json({ message: "Order not found" });
     }
 
     order.rider = riderId;
-    order.orderStatus = "Picked Up";
+    order.orderStatus = "Assigned";
+
     await order.save();
 
     res.json(order);
   } catch (error) {
     console.error("ASSIGN RIDER ERROR:", error);
-    res.status(500).json({ message: "Failed to assign rider" });
+    res.status(500).json({ message: "Assign rider failed" });
   }
 });
 
+/* ===============================
+   DELETE ORDER (ADMIN)
+   =============================== */
+router.delete("/:id", async (req, res) => {
+  try {
+    await Order.findByIdAndDelete(req.params.id);
+    res.json({ message: "Order deleted" });
+  } catch (error) {
+    console.error("DELETE ORDER ERROR:", error);
+    res.status(500).json({ message: "Delete failed" });
+  }
+});
 
 export default router;

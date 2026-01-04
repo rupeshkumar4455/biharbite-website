@@ -56,46 +56,39 @@ router.post("/register", async (req, res) => {
    LOGIN (USER + ADMIN)
    =============================== */
 router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    /* 🔐 ADMIN LOGIN */
-    if (email === "admin" && password === "admin123") {
-      return res.json({
-        user: {
-          _id: "admin",
-          name: "Admin",
-          email: "admin",
-          role: "admin",
-        },
-        token: generateToken("admin", "admin"),
-      });
-    }
-
-    /* 👤 USER LOGIN */
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    res.json({
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: "user",
-      },
-      token: generateToken(user._id, "user"),
+  // ADMIN LOGIN (FIXED)
+  if (email === "admin" && password === "admin123") {
+    return res.json({
+      user: { name: "Admin", email: "admin", isAdmin: true },
+      token: jwt.sign(
+        { role: "admin" },
+        process.env.JWT_SECRET,
+        { expiresIn: "30d" }
+      ),
     });
-  } catch (error) {
-    console.error("LOGIN ERROR:", error);
-    res.status(500).json({ message: "Server error" });
   }
+
+  // USER LOGIN
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(401).json({ message: "Invalid credentials" });
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    return res.status(401).json({ message: "Invalid credentials" });
+  }
+
+  res.json({
+    user,
+    token: jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    ),
+  });
 });
 
 export default router;

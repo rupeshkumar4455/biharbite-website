@@ -13,23 +13,18 @@ const protectRider = async (req, res, next) => {
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      if (decoded.role !== "rider") {
-        return res.status(403).json({ message: "Not a rider" });
-      }
-
       const rider = await Rider.findById(decoded.id).select("-password");
-
-      if (!rider || !rider.isActive) {
-        return res.status(401).json({ message: "Rider not authorized" });
+      if (!rider) {
+        return res.status(401).json({ message: "Rider not found" });
       }
 
       req.rider = rider;
       next();
     } catch (error) {
-      return res.status(401).json({ message: "Rider token failed" });
+      return res.status(401).json({ message: "Not authorized" });
     }
   } else {
-    return res.status(401).json({ message: "No rider token" });
+    return res.status(401).json({ message: "No token" });
   }
 };
 

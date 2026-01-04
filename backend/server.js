@@ -3,32 +3,31 @@ import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
 
+/* ===============================
+   ROUTES IMPORT
+   =============================== */
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
-import riderRoutes from "./routes/riderRoutes.js";
+import riderRoutes from "./routes/riderRoutes.js"; // 🔥 RIDER
 
 dotenv.config();
 
 const app = express();
 
 /* ===============================
-   🔥 CORS – FINAL FIX (DEV + PROD)
+   🌐 CORS (RENDER + VERCEL SAFE)
    =============================== */
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",              // local dev
-      "https://biharbite-website.vercel.app" // vercel prod
+      "http://localhost:5173",
+      "https://biharbite-website.vercel.app",
     ],
-    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    credentials: true,
   })
 );
-
-// 👇 VERY IMPORTANT (preflight)
-app.options("*", cors());
 
 /* ===============================
    MIDDLEWARE
@@ -36,22 +35,22 @@ app.options("*", cors());
 app.use(express.json());
 
 /* ===============================
-   ROUTES
+   API ROUTES
    =============================== */
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
-app.use("/api/rider", riderRoutes);
+app.use("/api/rider", riderRoutes); // 🔥 VERY IMPORTANT
 
 /* ===============================
-   ROOT
+   ROOT TEST
    =============================== */
 app.get("/", (req, res) => {
   res.send("🚀 BiharBite Backend Running");
 });
 
 /* ===============================
-   DB + SERVER
+   DATABASE + SERVER START
    =============================== */
 const PORT = process.env.PORT || 5000;
 
@@ -59,8 +58,10 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB connected");
-    app.listen(PORT, () =>
-      console.log(`🚀 Server running on port ${PORT}`)
-    );
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
   })
-  .catch((err) => console.error(err));
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err.message);
+  });
