@@ -41,6 +41,11 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: "Assigned", // 🚴 Rider level
     },
+    riderLocation: {
+  lat: Number,
+  lng: Number,
+  updatedAt: Date,
+},
   },
   { timestamps: true }
 );

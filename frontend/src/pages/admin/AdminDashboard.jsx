@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import LiveMap from "../../components/LiveMap";
+
 
 const AdminDashboard = () => {
   const [orders, setOrders] = useState([]);
@@ -281,6 +283,19 @@ Date: ${new Date(order.createdAt).toLocaleString()}
             >
               Close
             </button>
+
+{selectedOrder?.riderLocation && (
+  <div className="mt-4">
+    <h4 className="font-semibold mb-2">Live Rider Location</h4>
+    <LiveMap
+      lat={selectedOrder.riderLocation.lat}
+      lng={selectedOrder.riderLocation.lng}
+    />
+  </div>
+)}
+
+
+            
           </div>
         </div>
       )}

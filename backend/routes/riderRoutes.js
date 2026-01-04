@@ -121,4 +121,45 @@ router.put("/orders/:id/status", async (req, res) => {
   }
 });
 
+/* ===============================
+   📍 UPDATE RIDER LOCATION
+   =============================== */
+router.put("/orders/:id/location", async (req, res) => {
+  try {
+    const auth = req.headers.authorization;
+    if (!auth || !auth.startsWith("Bearer")) {
+      return res.status(401).json({ message: "No token" });
+    }
+
+    const token = auth.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (decoded.role !== "rider") {
+      return res.status(403).json({ message: "Not rider" });
+    }
+
+    const { lat, lng } = req.body;
+
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (!order.rider || order.rider.toString() !== decoded.id) {
+      return res.status(403).json({ message: "Not your order" });
+    }
+
+    order.riderLocation = {
+      lat,
+      lng,
+      updatedAt: new Date(),
+    };
+
+    await order.save();
+    res.json({ message: "Location updated" });
+  } catch (err) {
+    res.status(500).json({ message: "Location update failed" });
+  }
+});
+
 export default router;

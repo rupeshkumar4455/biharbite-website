@@ -1,3 +1,5 @@
+import TrackOrder from "./pages/TrackOrder";
+
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Cart from "./pages/Cart";
@@ -5,6 +7,7 @@ import Checkout from "./pages/Checkout";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import MyOrders from "./pages/MyOrders";
+
 
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -37,6 +40,7 @@ const App = () => {
         <Route path="/my-orders" element={<MyOrders />} />
 
         {/* ADMIN */}
+        <Route path="/track/:id" element={<TrackOrder />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
 

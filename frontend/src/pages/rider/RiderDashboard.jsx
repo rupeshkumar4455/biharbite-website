@@ -20,13 +20,63 @@ const RiderDashboard = () => {
         }
       );
 
-      // ✅ Force array
       setOrders(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("RIDER FETCH ORDERS ERROR:", err);
       setOrders([]);
     }
   };
+
+  /* ===============================
+     SEND LIVE LOCATION
+     =============================== */
+  const sendLocation = async (orderId) => {
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+
+        try {
+          await axios.put(
+            `${import.meta.env.VITE_API_URL}/api/rider/orders/${orderId}/location`,
+            {
+              lat: latitude,
+              lng: longitude,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${riderToken}`,
+              },
+            }
+          );
+        } catch (err) {
+          console.error("LOCATION UPDATE FAILED");
+        }
+      },
+      () => {
+        console.warn("Location permission denied");
+      }
+    );
+  };
+
+  /* ===============================
+     AUTO LOCATION TRACKING (15s)
+     =============================== */
+  useEffect(() => {
+    const interval = setInterval(() => {
+      orders.forEach((order) => {
+        if (
+          order.deliveryStatus === "Picked Up" ||
+          order.deliveryStatus === "On The Way"
+        ) {
+          sendLocation(order._id);
+        }
+      });
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, [orders]);
 
   /* ===============================
      UPDATE DELIVERY STATUS
@@ -42,8 +92,14 @@ const RiderDashboard = () => {
           },
         }
       );
-      fetchOrders(); // refresh
-    } catch (err) {
+
+      // send location immediately when trip starts
+      if (status === "Picked Up" || status === "On The Way") {
+        sendLocation(orderId);
+      }
+
+      fetchOrders();
+    } catch {
       alert("Failed to update status");
     }
   };
@@ -53,7 +109,7 @@ const RiderDashboard = () => {
   }, []);
 
   /* ===============================
-     STATUS COLOR
+     STATUS BADGE COLOR
      =============================== */
   const statusColor = (status) => {
     if (status === "Assigned") return "bg-yellow-100 text-yellow-700";
@@ -74,9 +130,9 @@ const RiderDashboard = () => {
       </p>
 
       {orders.length === 0 ? (
-        <div className="text-center text-gray-500 mt-10">
-          No orders assigned yet 🚴
-        </div>
+        <p className="text-center text-gray-500">
+          No orders assigned yet
+        </p>
       ) : (
         <div className="space-y-4">
           {orders.map((order) => (
@@ -84,7 +140,7 @@ const RiderDashboard = () => {
               key={order._id}
               className="border rounded p-4 bg-white shadow"
             >
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between">
                 <h3 className="font-semibold">
                   Order #{order._id.slice(-6)}
                 </h3>
@@ -97,36 +153,16 @@ const RiderDashboard = () => {
                 </span>
               </div>
 
-              <div className="mt-2 text-sm">
-                <p>
-                  <strong>Customer:</strong>{" "}
-                  {order.user?.name}
-                </p>
-                <p>
-                  <strong>Email:</strong>{" "}
-                  {order.user?.email}
-                </p>
-                <p>
-                  <strong>Total:</strong> ₹
-                  {order.totalAmount}
-                </p>
-              </div>
+              <p className="text-sm mt-1">
+                <strong>Customer:</strong>{" "}
+                {order.user?.name}
+              </p>
+              <p className="text-sm">
+                <strong>Total:</strong> ₹
+                {order.totalAmount}
+              </p>
 
-              {/* ITEMS */}
-              <div className="mt-3">
-                <strong className="text-sm">Items:</strong>
-                <ul className="list-disc ml-5 text-sm">
-                  {Array.isArray(order.items) &&
-                    order.items.map((i, idx) => (
-                      <li key={idx}>
-                        {i.name} × {i.qty}
-                      </li>
-                    ))}
-                </ul>
-              </div>
-
-              {/* ACTION BUTTONS */}
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-4 flex gap-2 flex-wrap">
                 {order.deliveryStatus === "Assigned" && (
                   <button
                     onClick={() =>
@@ -173,8 +209,7 @@ const RiderDashboard = () => {
               </div>
 
               <p className="text-xs text-gray-500 mt-3">
-                Assigned on{" "}
-                {new Date(order.updatedAt).toLocaleString()}
+                Tracking active while delivering
               </p>
             </div>
           ))}
