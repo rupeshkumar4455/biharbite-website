@@ -1,11 +1,11 @@
 import express from "express";
 import Order from "../models/Order.js";
-import protect, { adminOnly } from "../middleware/authMiddleware.js";
+import protect from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 /* ===============================
-   CREATE ORDER (USER)
+   👤 USER: CREATE ORDER
    =============================== */
 router.post("/", protect, async (req, res) => {
   try {
@@ -17,74 +17,79 @@ router.post("/", protect, async (req, res) => {
       orderStatus: "Placed",
       deliveryStatus: "Assigned",
     });
-    res.json(order);
+
+    res.status(201).json(order);
   } catch (err) {
-    res.status(500).json({ message: "Order create failed" });
+    res.status(500).json({ message: "Order creation failed" });
   }
 });
 
 /* ===============================
-   GET ALL ORDERS (ADMIN)
+   👤 USER: MY ORDERS  🔥 REQUIRED
    =============================== */
-router.get("/", protect, adminOnly, async (req, res) => {
+router.get("/my", protect, async (req, res) => {
   try {
-    const orders = await Order.find()
-      .populate("user", "name email")
-      .populate("rider", "name email");
+    const orders = await Order.find({ user: req.user._id })
+      .populate("rider", "name phone")
+      .sort({ createdAt: -1 });
+
     res.json(orders);
   } catch (err) {
-    res.status(500).json({ message: "Fetch orders failed" });
+    res.status(500).json({ message: "Failed to fetch orders" });
   }
 });
 
 /* ===============================
-   UPDATE ORDER STATUS (ADMIN)
+   🛠️ ADMIN: ALL ORDERS
    =============================== */
-router.put("/:id", protect, adminOnly, async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id);
-    if (!order)
-      return res.status(404).json({ message: "Order not found" });
+router.get("/", async (req, res) => {
+  const orders = await Order.find()
+    .populate("user", "name email")
+    .populate("rider", "name phone")
+    .sort({ createdAt: -1 });
 
-    order.orderStatus = req.body.status;
-    await order.save();
-    res.json(order);
-  } catch {
-    res.status(500).json({ message: "Update failed" });
-  }
+  res.json(orders);
 });
 
 /* ===============================
-   ASSIGN RIDER (ADMIN)
+   🛠️ ADMIN: UPDATE STATUS
    =============================== */
-router.put("/:id/assign-rider", protect, adminOnly, async (req, res) => {
-  try {
-    const { riderId } = req.body;
-    const order = await Order.findById(req.params.id);
-
-    if (!order)
-      return res.status(404).json({ message: "Order not found" });
-
-    order.rider = riderId;
-    order.deliveryStatus = "Assigned";
-    await order.save();
-
-    res.json({ message: "Rider assigned", order });
-  } catch (err) {
-    res.status(500).json({ message: "Assign rider failed" });
+router.put("/:id", async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) {
+    return res.status(404).json({ message: "Order not found" });
   }
+
+  order.orderStatus = req.body.status;
+  await order.save();
+
+  res.json(order);
 });
 
 /* ===============================
-   DELETE ORDER (ADMIN)
+   🛠️ ADMIN: ASSIGN RIDER
    =============================== */
-router.delete("/:id", protect, adminOnly, async (req, res) => {
-  try {
-    await Order.findByIdAndDelete(req.params.id);
-    res.json({ message: "Order deleted" });
-  } catch {
-    res.status(500).json({ message: "Delete failed" });
+router.put("/:id/assign-rider", async (req, res) => {
+  const { riderId } = req.body;
+
+  const order = await Order.findById(req.params.id);
+  if (!order) {
+    return res.status(404).json({ message: "Order not found" });
   }
+
+  order.rider = riderId;
+  order.deliveryStatus = "Assigned";
+  await order.save();
+
+  res.json({ message: "Rider assigned" });
+});
+
+/* ===============================
+   🛠️ ADMIN: DELETE ORDER
+   =============================== */
+router.delete("/:id", async (req, res) => {
+  await Order.findByIdAndDelete(req.params.id);
+  res.json({ message: "Order deleted" });
 });
 
 export default router;
