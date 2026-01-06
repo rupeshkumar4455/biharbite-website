@@ -35,25 +35,29 @@ const Navbar = () => {
         {/* LOGO */}
         <Link
           to="/"
-          className="text-2xl font-bold text-red-600"
+          className="text-2xl font-extrabold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent"
         >
           BiharBite
         </Link>
 
         {/* LINKS */}
-        <div className="flex items-center gap-5 text-sm font-medium">
+        <div className="flex items-center gap-6 text-sm font-semimedium">
 
           {/* ================= HOME ================= */}
           {!isAdminPage && (
-            <Link to="/" className="hover:text-red-600">
+            <Link to="/" className="hover:text-red-600 transition" >
               Home
             </Link>
           )}
 
           {/* ================= CART ================= */}
           {!isAdmin && (
-            <Link to="/cart" className="hover:text-red-600">
-              Cart ({cart.length})
+            <Link to="/cart" className="relative hover:text-red-600 transition">
+              Cart 
+              <span className="ml-1 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
+              {cart.length}
+            </span>
+              
             </Link>
           )}
 
@@ -63,7 +67,7 @@ const Navbar = () => {
               <Link to="/login" className="hover:text-red-600">
                 Login
               </Link>
-              <Link to="/signup" className="hover:text-red-600">
+              <Link to="/signup" className="bg-red-600 text-white px-4 py-1.5 rounded hover:bg-red-700 transition">
                 Signup
               </Link>
             </>
@@ -88,7 +92,7 @@ const Navbar = () => {
           {!user && !isAdminPage && (
             <Link
               to="/admin/login"
-              className="border border-black px-3 py-1.5 rounded hover:bg-black hover:text-white"
+              className="border border-gray-800 px-3 py-1.5 rounded hover:bg-black hover:text-white transition"
             >
               Admin
             </Link>
@@ -107,7 +111,7 @@ const Navbar = () => {
               )}
               <button
                 onClick={adminLogout}
-                className="bg-black text-white px-3 py-1.5 rounded hover:bg-gray-800"
+                className="text-gray-600 hover:text-red-600"
               >
                 Logout
               </button>

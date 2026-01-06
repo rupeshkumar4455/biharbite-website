@@ -3,6 +3,7 @@ import axios from "axios";
 
 const RiderDashboard = () => {
   const [orders, setOrders] = useState([]);
+  const token = localStorage.getItem("riderToken");
   const riderToken = localStorage.getItem("riderToken");
   const riderData = JSON.parse(localStorage.getItem("rider"));
 
@@ -10,22 +11,24 @@ const RiderDashboard = () => {
      FETCH ASSIGNED ORDERS
      =============================== */
   const fetchOrders = async () => {
-    try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/rider/orders`,
-        {
-          headers: {
-            Authorization: `Bearer ${riderToken}`,
-          },
-        }
-      );
+  try {
+    const token = localStorage.getItem("riderToken");
 
-      setOrders(Array.isArray(res.data) ? res.data : []);
-    } catch (err) {
-      console.error("RIDER FETCH ORDERS ERROR:", err);
-      setOrders([]);
-    }
-  };
+    const res = await axios.get(
+      `${import.meta.env.VITE_API_URL}/api/rider/orders`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setOrders(res.data);
+  } catch (err) {
+    console.error("RIDER FETCH ORDERS ERROR:", err);
+  }
+};
+
 
   /* ===============================
      SEND LIVE LOCATION
@@ -190,20 +193,47 @@ const RiderDashboard = () => {
                 )}
 
                 {order.deliveryStatus === "Accepted" && (
-                  <button onClick={() => updateDeliveryStatus(order._id, "Picked Up")}>
-    Picked Up
+                  <button
+    onClick={() => updateDeliveryStatus(order._id, "Picked Up")}
+    disabled={order.deliveryStatus !== "Assigned"}
+    className={`px-4 py-1.5 rounded text-sm font-medium transition
+      ${
+        order.deliveryStatus === "Assigned"
+          ? "bg-yellow-500 text-white hover:bg-yellow-600"
+          : "bg-gray-300 text-gray-600 cursor-not-allowed"
+      }`}
+  >
+    📦 Picked Up
   </button>
                 )}
 
                 {order.deliveryStatus === "Picked Up" && (
-                  <button onClick={() => updateDeliveryStatus(order._id, "On The Way")}>
-    On The Way
+                  <button
+    onClick={() => updateDeliveryStatus(order._id, "On The Way")}
+    disabled={order.deliveryStatus !== "Picked Up"}
+    className={`px-4 py-1.5 rounded text-sm font-medium transition
+      ${
+        order.deliveryStatus === "Picked Up"
+          ? "bg-blue-500 text-white hover:bg-blue-600"
+          : "bg-gray-300 text-gray-600 cursor-not-allowed"
+      }`}
+  >
+    🚴 On The Way
   </button>
                 )}
 
                 {order.deliveryStatus === "On The Way" && (
-                  <button onClick={() => updateDeliveryStatus(order._id, "Delivered")}>
-    Delivered
+                  <button
+    onClick={() => updateDeliveryStatus(order._id, "Delivered")}
+    disabled={order.deliveryStatus !== "On The Way"}
+    className={`px-4 py-1.5 rounded text-sm font-medium transition
+      ${
+        order.deliveryStatus === "On The Way"
+          ? "bg-green-600 text-white hover:bg-green-700"
+          : "bg-gray-300 text-gray-600 cursor-not-allowed"
+      }`}
+  >
+    ✅ Delivered
   </button>
                 )}
               </div>
