@@ -33,12 +33,16 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
 
         {/* LOGO */}
-        <Link
-          to="/"
-          className="text-2xl font-extrabold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent"
-        >
-          BiharBite
-        </Link>
+        <Link to="/" className="flex items-center gap-2">
+  <img
+    src="/images/logo.png"
+    alt="BiharBite Logo"
+    className="h-10 w-10 object-contain bg-white rounded-full p-1 shadow"
+  />
+  <span className="text-2xl font-extrabold text-red-600 tracking-wide">
+    BiharBite
+  </span>
+</Link>
 
         {/* LINKS */}
         <div className="flex items-center gap-6 text-sm font-semimedium">

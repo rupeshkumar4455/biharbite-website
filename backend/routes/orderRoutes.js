@@ -1,6 +1,6 @@
 import express from "express";
 import Order from "../models/Order.js";
-import protect from "../middleware/authMiddleware.js";
+import protect, { adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -14,18 +14,20 @@ router.post("/", protect, async (req, res) => {
       items: req.body.items,
       totalAmount: req.body.totalAmount,
       paymentMethod: req.body.paymentMethod,
+
       orderStatus: "Placed",
-      deliveryStatus: "Assigned",
+      paymentStatus: "Pending",
     });
 
     res.status(201).json(order);
   } catch (err) {
+    console.error("CREATE ORDER ERROR:", err);
     res.status(500).json({ message: "Order creation failed" });
   }
 });
 
 /* ===============================
-   👤 USER: MY ORDERS  🔥 REQUIRED
+   👤 USER: MY ORDERS
    =============================== */
 router.get("/my", protect, async (req, res) => {
   try {
@@ -35,6 +37,7 @@ router.get("/my", protect, async (req, res) => {
 
     res.json(orders);
   } catch (err) {
+    console.error("MY ORDERS ERROR:", err);
     res.status(500).json({ message: "Failed to fetch orders" });
   }
 });
@@ -42,54 +45,98 @@ router.get("/my", protect, async (req, res) => {
 /* ===============================
    🛠️ ADMIN: ALL ORDERS
    =============================== */
-router.get("/", async (req, res) => {
-  const orders = await Order.find()
-    .populate("user", "name email")
-    .populate("rider", "name phone")
-    .sort({ createdAt: -1 });
+router.get("/", protect, adminOnly, async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate("user", "name email")
+      .populate("rider", "name phone")
+      .sort({ createdAt: -1 });
 
-  res.json(orders);
+    res.json(orders);
+  } catch (err) {
+    console.error("ADMIN FETCH ORDERS ERROR:", err);
+    res.status(500).json({ message: "Failed to fetch orders" });
+  }
 });
 
 /* ===============================
-   🛠️ ADMIN: UPDATE STATUS
+   🛠️ ADMIN: UPDATE ORDER STATUS
    =============================== */
-router.put("/:id", async (req, res) => {
-  const order = await Order.findById(req.params.id);
-  if (!order) {
-    return res.status(404).json({ message: "Order not found" });
+router.put("/:id", protect, adminOnly, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order)
+      return res.status(404).json({ message: "Order not found" });
+
+    order.orderStatus = req.body.status;
+    await order.save();
+
+    res.json(order);
+  } catch (err) {
+    res.status(500).json({ message: "Update status failed" });
   }
-
-  order.orderStatus = req.body.status;
-  await order.save();
-
-  res.json(order);
 });
 
 /* ===============================
    🛠️ ADMIN: ASSIGN RIDER
    =============================== */
-router.put("/:id/assign-rider", async (req, res) => {
-  const { riderId } = req.body;
+router.put("/:id/assign-rider", protect, adminOnly, async (req, res) => {
+  try {
+    const { riderId } = req.body;
 
-  const order = await Order.findById(req.params.id);
-  if (!order) {
-    return res.status(404).json({ message: "Order not found" });
+    const order = await Order.findById(req.params.id);
+    if (!order)
+      return res.status(404).json({ message: "Order not found" });
+
+    order.rider = riderId;
+    order.orderStatus = "Out for delivery";
+
+    await order.save();
+
+    const updatedOrder = await Order.findById(order._id)
+      .populate("user", "name email")
+      .populate("rider", "name phone");
+
+    res.json({
+      message: "Rider assigned successfully",
+      order: updatedOrder,
+    });
+  } catch (err) {
+    console.error("ASSIGN RIDER ERROR:", err);
+    res.status(500).json({ message: "Assign rider failed" });
   }
+});
 
-  order.rider = riderId;
-  order.deliveryStatus = "Assigned";
-  await order.save();
+/* ===============================
+   🚴 RIDER: UPDATE LIVE LOCATION
+   =============================== */
+router.put("/:id/location", protect, async (req, res) => {
+  try {
+    const { lat, lng } = req.body;
 
-  res.json({ message: "Rider assigned" });
+    const order = await Order.findById(req.params.id);
+    if (!order)
+      return res.status(404).json({ message: "Order not found" });
+
+    order.riderLocation = { lat, lng };
+    await order.save();
+
+    res.json({ message: "Rider location updated" });
+  } catch (err) {
+    res.status(500).json({ message: "Location update failed" });
+  }
 });
 
 /* ===============================
    🛠️ ADMIN: DELETE ORDER
    =============================== */
-router.delete("/:id", async (req, res) => {
-  await Order.findByIdAndDelete(req.params.id);
-  res.json({ message: "Order deleted" });
+router.delete("/:id", protect, adminOnly, async (req, res) => {
+  try {
+    await Order.findByIdAndDelete(req.params.id);
+    res.json({ message: "Order deleted" });
+  } catch (err) {
+    res.status(500).json({ message: "Delete failed" });
+  }
 });
 
 export default router;

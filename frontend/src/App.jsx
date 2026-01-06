@@ -1,19 +1,21 @@
-import TrackOrder from "./pages/TrackOrder";
-
 import { Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+
 import Home from "./pages/Home";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import MyOrders from "./pages/MyOrders";
+import TrackOrder from "./pages/TrackOrder";
+
 
 
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
+ 
 
 import Shipping from "./pages/Shipping";
 import Refund from "./pages/Refund";
@@ -52,12 +54,8 @@ const App = () => {
         <Route path="/rider/login" element={<RiderLogin />} />
         <Route path="/rider/dashboard" element={<RiderDashboard />} />
         <Route path="/contact" element={<Contact />} />
-
-        
-
-      </Routes>
-
-      <Footer />
+        </Routes>
+        <Footer />
     </>
   );
 };

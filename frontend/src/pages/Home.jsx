@@ -41,13 +41,52 @@ const Home = () => {
   return (
     <div>
       {/* ================= BANNER ================= */}
-      <div className="w-full h-[420px] overflow-hidden">
-        <img
-          src={banners[bannerIndex]}
-          alt="BiharBite Banner"
-          className="w-full h-full object-cover"
-        />
-      </div>
+      <div className="relative w-full h-[420px] overflow-hidden">
+
+  {/* IMAGE */}
+  <img
+    src={banners[bannerIndex]}
+    alt="BiharBite Banner"
+    className="w-full h-full object-cover transition-all duration-700"
+  />
+
+  {/* LEFT ARROW */}
+  <button
+    onClick={() =>
+      setBannerIndex(
+        bannerIndex === 0 ? banners.length - 1 : bannerIndex - 1
+      )
+    }
+    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white text-black w-10 h-10 rounded-full text-2xl flex items-center justify-center shadow"
+  >
+    ‹
+  </button>
+
+  {/* RIGHT ARROW */}
+  <button
+    onClick={() =>
+      setBannerIndex((bannerIndex + 1) % banners.length)
+    }
+    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white text-black w-10 h-10 rounded-full text-2xl flex items-center justify-center shadow"
+  >
+    ›
+  </button>
+
+  {/* DOTS */}
+  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+    {banners.map((_, idx) => (
+      <button
+        key={idx}
+        onClick={() => setBannerIndex(idx)}
+        className={`w-3 h-3 rounded-full transition ${
+          bannerIndex === idx
+            ? "bg-red-600"
+            : "bg-white/70"
+        }`}
+      ></button>
+    ))}
+  </div>
+</div>
 
       {/* ================= PRODUCTS ================= */}
       <section className="max-w-7xl mx-auto px-6 py-14">
