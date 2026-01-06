@@ -82,27 +82,21 @@ router.put("/:id", protect, adminOnly, async (req, res) => {
    =============================== */
 router.put("/:id/assign-rider", protect, adminOnly, async (req, res) => {
   try {
-    const { riderId } = req.body;
-
     const order = await Order.findById(req.params.id);
     if (!order)
       return res.status(404).json({ message: "Order not found" });
 
-    order.rider = riderId;
+    order.rider = req.body.riderId;
     order.orderStatus = "Out for delivery";
 
     await order.save();
 
-    const updatedOrder = await Order.findById(order._id)
+    const populatedOrder = await Order.findById(order._id)
       .populate("user", "name email")
       .populate("rider", "name phone");
 
-    res.json({
-      message: "Rider assigned successfully",
-      order: updatedOrder,
-    });
-  } catch (err) {
-    console.error("ASSIGN RIDER ERROR:", err);
+    res.json(populatedOrder);
+  } catch {
     res.status(500).json({ message: "Assign rider failed" });
   }
 });
@@ -126,6 +120,31 @@ router.put("/:id/location", protect, async (req, res) => {
     res.status(500).json({ message: "Location update failed" });
   }
 });
+
+
+/* ===============================
+   🚴 RIDER: GET ASSIGNED ORDERS
+   =============================== */
+router.get("/rider", protect, async (req, res) => {
+  try {
+    // 🛑 ensure rider logged in
+    if (!req.user || !req.user.isRider) {
+      return res.status(403).json({ message: "Not a rider" });
+    }
+
+    const orders = await Order.find({
+      rider: req.user._id,
+    })
+      .populate("user", "name phone")
+      .sort({ createdAt: -1 });
+
+    res.json(orders);
+  } catch (err) {
+    console.error("RIDER ORDERS ERROR:", err);
+    res.status(500).json({ message: "Failed to fetch rider orders" });
+  }
+});
+
 
 /* ===============================
    🛠️ ADMIN: DELETE ORDER
