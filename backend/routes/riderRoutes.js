@@ -79,20 +79,27 @@ router.get("/all", async (req, res) => {
 /* ===============================
    🚴 RIDER: GET ASSIGNED ORDERS
    =============================== */
-router.get("/orders", protect, riderOnly, async (req, res) => {
+router.get("/orders", async (req, res) => {
   try {
-    const orders = await Order.find({
-      rider: req.user._id,
-    })
-      .populate("user", "name phone address")
+    const auth = req.headers.authorization;
+    if (!auth || !auth.startsWith("Bearer")) {
+      return res.status(401).json({ message: "No token" });
+    }
+
+    const token = auth.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (decoded.role !== "rider") {
+      return res.status(403).json({ message: "Not rider" });
+    }
+
+    const orders = await Order.find({ rider: decoded.id })
+      .populate("user", "name phone")
       .sort({ createdAt: -1 });
 
     res.json(orders);
   } catch (err) {
-    console.error("RIDER FETCH ORDERS ERROR:", err);
-    res
-      .status(500)
-      .json({ message: "Failed to fetch rider orders" });
+    res.status(401).json({ message: "Invalid token" });
   }
 });
 
