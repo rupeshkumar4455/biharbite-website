@@ -8,7 +8,7 @@ const Footer = () => {
         {/* BRAND */}
         <div>
           <h2 className="text-2xl font-bold text-white mb-3">
-          
+          <img src="/images/logo.png" alt="BiharBite Logo" className="h-8 w-10 inline-block mr-2"/>
             Bihar<span className="text-red-500">Bite</span>
           </h2>
           <p className="text-sm leading-relaxed">

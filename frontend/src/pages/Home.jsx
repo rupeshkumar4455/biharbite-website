@@ -94,7 +94,7 @@ const Home = () => {
       {/* ================= PRODUCTS ================= */}
       <section className="max-w-7xl mx-auto px-6 py-14">
         <h2 className="text-3xl font-extrabold text-center mb-10">
-    Our <span className="text-red-600">Products</span>
+    Our <span className="text-red-600">Products 🧁</span>
   </h2>
 
         <div className="max-w-7xl mx-auto px-6">
