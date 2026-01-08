@@ -42,6 +42,12 @@ app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/rider", riderRoutes); // 🔥 MUST EXIST
 
+
+
+ 
+
+
+
 /* ===============================
    ROOT CHECK
    =============================== */

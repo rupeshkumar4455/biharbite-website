@@ -128,6 +128,16 @@ const RiderDashboard = () => {
       <h2 className="text-3xl font-extrabold mb-8">
         🚴 Rider Dashboard
       </h2>
+      <h3 className="text-xl font-medium mb-2">
+        Hello Rider Sahab!!
+      </h3>
+      <h3 className="text-lg text-gray-600 mb-6">
+        Manage and update your delivery orders here.
+      </h3>
+      <h3 className="text-xl font-semibold mb-4">
+        Welcome Back! Here are your assigned orders:
+      </h3>
+      
 
       {orders.length === 0 ? (
         <p className="text-gray-600">

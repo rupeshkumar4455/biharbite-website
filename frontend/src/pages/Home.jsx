@@ -15,6 +15,7 @@ const Home = () => {
 
   const [products, setProducts] = useState([]);
   const [bannerIndex, setBannerIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   /* rotate banner */
   useEffect(() => {
@@ -27,14 +28,16 @@ const Home = () => {
   /* fetch products */
   useEffect(() => {
     const fetchProducts = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/products`);
-        const data = await res.json();
-        setProducts(Array.isArray(data) ? data : []);
-      } catch {
-        setProducts([]);
-      }
-    };
+  try {
+    const res = await fetch(`${API_BASE}/api/products`);
+    const data = await res.json();
+    setProducts(Array.isArray(data) ? data : []);
+  } catch {
+    setProducts([]);
+  } finally {
+    setLoading(false); // ✅ yahi magic hai
+  }
+};
     fetchProducts();
   }, []);
 
@@ -94,42 +97,61 @@ const Home = () => {
     Our <span className="text-red-600">Products</span>
   </h2>
 
-        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-6">
-          {products.map((p) => (
-            <div
-              key={p._id}
-              className="bg-white rounded-xl shadow hover:shadow-xl transition transform hover:-translate-y-1"
+        <div className="max-w-7xl mx-auto px-6">
+  {loading ? (
+    /* 🔹 SKELETON LOADING */
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      {[1, 2, 3, 4].map((i) => (
+        <div
+          key={i}
+          className="animate-pulse bg-gray-100 h-72 rounded-xl"
+        />
+      ))}
+    </div>
+  ) : (
+    /* 🔹 REAL PRODUCTS */
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      {products.map((p) => (
+        <motion.div
+          key={p._id}
+          whileHover={{ scale: 1.03 }}
+          className="bg-white rounded-xl shadow hover:shadow-xl transition"
+        >
+          <img
+            src={p.image}
+            alt={p.name}
+            className="h-52 w-full object-cover rounded-t-xl"
+          />
+
+          <div className="p-4">
+            <h3 className="font-bold text-lg">{p.name}</h3>
+            <p className="text-sm text-gray-600 mt-1">
+              {p.description}
+            </p>
+
+            <p className="text-xl font-extrabold text-red-600 mt-2">
+              ₹{p.price}
+            </p>
+
+            <button
+              className="bg-green-600 text-white w-full py-2 mt-3 rounded hover:bg-red-700"
+              onClick={() =>
+                addToCart({
+                  _id: p._id,
+                  name: p.name,
+                  price: p.price,
+                  image: p.image,
+                })
+              }
             >
-              <img
-                src={p.image}
-                alt={p.name}
-                className="h-52 w-full object-cover rounded-t-xl"
-              />
-
-              <h3 className="font-bold text-lg">{p.name}</h3>
-              <p className="text-sm text-gray-600 mt-1">
-                {p.description}
-              </p>
-
-              <p className="text-xl font-extrabold text-red-600">₹{p.price}</p>
-
-              <button
-                className="bg-green-600 text-white w-full py-2 rounded hover:bg-red-700"
-                onClick={() =>
-                  addToCart &&
-                  addToCart({
-                    id: p._id,
-                    name: p.name,
-                    price: p.price,
-                    image: p.image,
-                  })
-                }
-              >
-                Add to Cart
-              </button>
+              Add to Cart
+            </button>
             </div>
-          ))}
-        </div>
+        </motion.div>
+      ))}
+    </div>
+  )}
+</div>
       </section>
 
       {/* ================= ABOUT ================= */}

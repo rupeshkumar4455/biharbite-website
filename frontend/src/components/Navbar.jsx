@@ -37,10 +37,10 @@ const Navbar = () => {
   <img
     src="/images/logo.png"
     alt="BiharBite Logo"
-    className="h-10 w-10 object-contain bg-white rounded-full p-1 shadow"
+    className="h-12 md:h-14 w-auto object-contain"
   />
   <span className="text-2xl font-extrabold text-red-600 tracking-wide">
-    BiharBite
+    Bihar<span className="text-red-500">Bite</span>
   </span>
 </Link>
 
