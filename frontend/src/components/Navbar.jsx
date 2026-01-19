@@ -33,16 +33,17 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
 
         {/* LOGO */}
-        <Link to="/" className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
   <img
     src="/images/logo.png"
-    alt="BiharBite Logo"
-    className="h-12 md:h-14 w-auto object-contain"
+    alt="BiharBite"
+    className="w-20 h-20 md:w-24 md:h-24"
   />
-  <span className="text-2xl font-extrabold text-red-600 tracking-wide">
-    Bihar<span className="text-red-500">Bite</span>
+  <span className="text-1xl md:text-2xl font-extrabold tracking-wide text-red-600">
+    Bihar<span className="text-[var(--accent)]">Bite</span>
   </span>
-</Link>
+</div>
+
 
         {/* LINKS */}
         <div className="flex items-center gap-6 text-sm font-semimedium">

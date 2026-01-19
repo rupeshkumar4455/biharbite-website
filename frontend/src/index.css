@@ -1,3 +1,18 @@
+
+:root {
+  --primary: #B11226;
+  --secondary: #FFF7ED;
+  --accent: #F59E0B;
+  --success: #16A34A;
+  --text-main: #3F2A1D;
+}
+
+body {
+  background-color: var(--secondary);
+  color: var(--text-main);
+  font-family: "Poppins", system-ui, sans-serif;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -8,7 +8,7 @@ const Footer = () => {
         {/* BRAND */}
         <div>
           <h2 className="text-2xl font-bold text-white mb-3">
-          <img src="/images/logo.png" alt="BiharBite Logo" className="h-8 w-10 inline-block mr-2"/>
+          <img src="/images/logo.png" alt="BiharBite Logo" className="w-20 h-20 md:w-24 md:h-24"/>
             Bihar<span className="text-red-500">Bite</span>
           </h2>
           <p className="text-sm leading-relaxed">
@@ -81,7 +81,12 @@ const Footer = () => {
   <Link to="/contact" className="hover:text-red-500">
     Contact Us
   </Link>
+  
 </li>
+<Link to="/faq" className="hover:text-[var(--accent)]">
+  FAQs
+</Link>
+
 
           </ul>
         </div>
@@ -104,8 +109,15 @@ const Footer = () => {
               Dedicated portal for BiharBite riders
             </li>
           </ul>
+          <div className="flex gap-4 mt-4">
+  <a href="#" aria-label="Instagram">📸</a>
+  <a href="#" aria-label="Facebook">📘</a>
+  <a href="#" aria-label="LinkedIn">💼</a>
+</div>
+
         </div>
       </div>
+
 
 
           
@@ -116,6 +128,7 @@ const Footer = () => {
       <div className="border-t border-gray-700 mt-10 pt-6 text-center text-sm text-gray-400">
         © {new Date().getFullYear()} BiharBite. All rights reserved.
       </div>
+      
     </footer>
   );
 };

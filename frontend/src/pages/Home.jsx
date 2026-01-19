@@ -47,11 +47,15 @@ const Home = () => {
       <div className="relative w-full h-[420px] overflow-hidden">
 
   {/* IMAGE */}
-  <img
-    src={banners[bannerIndex]}
-    alt="BiharBite Banner"
-    className="w-full h-full object-cover transition-all duration-700"
-  />
+  <motion.img
+  src={banners[bannerIndex]}
+  alt="Banner"
+  initial={{ scale: 1.1 }}
+  animate={{ scale: 1 }}
+  transition={{ duration: 1 }}
+  className="w-full h-full object-cover"
+/>
+
 
   {/* LEFT ARROW */}
   <button
@@ -118,10 +122,11 @@ const Home = () => {
           className="bg-white rounded-xl shadow hover:shadow-xl transition"
         >
           <img
-            src={p.image}
-            alt={p.name}
-            className="h-52 w-full object-cover rounded-t-xl"
-          />
+  src={p.image}
+  alt={p.name}
+  className="h-52 w-full object-cover rounded-lg"
+  style={{ transform: "translateZ(60px)" }}
+/>
 
           <div className="p-4">
             <h3 className="font-bold text-lg">{p.name}</h3>
@@ -129,23 +134,26 @@ const Home = () => {
               {p.description}
             </p>
 
-            <p className="text-xl font-extrabold text-red-600 mt-2">
+            <p className="text-xl font-extrabold text-lightyellow-600 mt-2">
               ₹{p.price}
             </p>
 
             <button
-              className="bg-green-600 text-white w-full py-2 mt-3 rounded hover:bg-red-700"
-              onClick={() =>
-                addToCart({
-                  _id: p._id,
-                  name: p.name,
-                  price: p.price,
-                  image: p.image,
-                })
-              }
-            >
-              Add to Cart
-            </button>
+  className="bg-green-600 text-white w-full py-2 rounded-lg mt-4"
+  style={{
+    boxShadow: "0 6px 0 #15803d",
+  }}
+  onMouseDown={(e) =>
+    (e.currentTarget.style.transform = "translateY(4px)")
+  }
+  onMouseUp={(e) =>
+    (e.currentTarget.style.transform = "translateY(0)")
+  }
+  onClick={() => addToCart({ ...p })}
+>
+  Add to Cart
+</button>
+
             </div>
         </motion.div>
       ))}

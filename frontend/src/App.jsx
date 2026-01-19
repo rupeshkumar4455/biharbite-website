@@ -46,6 +46,9 @@ const App = () => {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
+
+        
+
         {/* FOOTER PAGES */}
         <Route path="/shipping" element={<Shipping />} />
         <Route path="/refund" element={<Refund />} />
@@ -56,8 +59,28 @@ const App = () => {
         <Route path="/contact" element={<Contact />} />
         </Routes>
         <Footer />
-    </>
+        
+        {/* 🔥 FIXED SUPPORT BUTTON (SCROLL SAFE) */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: "80px",
+          right: "20px",
+          zIndex: 9999,
+        }}
+      >
+        <button
+          className="bg-red-600 text-white px-5 py-3 rounded-full shadow-xl hover:scale-105 transition"
+          onClick={() => alert("Support coming soon")}
+        >
+          💬 Support
+        </button>
+      </div>
+        </>
   );
+  
 };
+
+
 
 export default App;
